@@ -1,1 +1,0 @@
-[NestJS Fundamentals Course](https://courses.nestjs.com/#microservices)
