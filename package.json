@@ -1,7 +1,18 @@
 {
   "name": "manifest",
   "version": "0.0.1",
-  "dependencies": {
-    "@nestjs/cli": "^10.4.4"
-  }
+  "workspaces": [
+    "application/**"
+  ],
+  "scripts": {
+    "lint": "turbo run lint",
+    "tscheck": "turbo run tscheck",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "husky": "^9.1.4",
+    "@nestjs/cli": "^10.4.4",
+    "turbo": "^2.0.12"
+  },
+  "packageManager": ">=npm@10.0.0"
 }

@@ -10,9 +10,11 @@
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
+    "tscheck": "tsc --noEmit",
     "lint": "eslint --fix",
     "test": "node -r @swc-node/register --test src/**/*.spec.ts",
-    "test:e2e": "node -r @swc-node/register --test src/**/*.e2e-spec.ts"
+    "test:e2e": "node -r @swc-node/register --test src/**/*.e2e-spec.ts",
+    "prepare": "husky"
   },
   "dependencies": {
     "@nestjs/apollo": "^12.2.0",
