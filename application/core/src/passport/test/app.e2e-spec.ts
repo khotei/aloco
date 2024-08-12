@@ -3,11 +3,13 @@ import { beforeEach, describe, it } from "node:test"
 
 import { INestApplication } from "@nestjs/common"
 import { Test, TestingModule } from "@nestjs/testing"
+import { print } from "graphql"
+import { gql } from "graphql-tag"
 import * as request from "supertest"
 
 import { AppModule } from "@/app/app.module"
 
-describe("AppController (e2e)", () => {
+describe("AuthenticationResolver (e2e)", () => {
   let app: INestApplication
 
   beforeEach(async () => {
@@ -20,14 +22,20 @@ describe("AppController (e2e)", () => {
   })
 
   it("/ (GET)", async () => {
+    const query = gql`
+      query MyQuery {
+        register
+      }
+    `
     const response = await request(app.getHttpServer())
-      .get("/")
-      .expect(200)
-      .expect("Hello World!")
+      .post("/graphql")
+      .send({
+        query: print(query),
+      })
 
     deepEqual(
-      { body: response.body, status: response.status },
-      { body: "Hello World!", status: 200 }
+      { body: response.body },
+      { body: { data: { register: "register" } } }
     )
   })
 })
