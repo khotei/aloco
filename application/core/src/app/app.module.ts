@@ -9,7 +9,7 @@ import { PassportModule } from "@/passport/passport.module"
 @Module({
   imports: [
     GraphQLModule.forRoot<ApolloDriverConfig>({
-      autoSchemaFile: join(process.cwd(), "src/schema.graphql"),
+      autoSchemaFile: join(process.cwd(), "src/__generated__/schema.graphql"),
       driver: ApolloDriver,
     }),
     PassportModule,

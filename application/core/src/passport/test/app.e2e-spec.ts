@@ -1,4 +1,4 @@
-import { deepEqual } from "node:assert/strict"
+import { ok } from "node:assert/strict"
 import { beforeEach, describe, it } from "node:test"
 
 import { INestApplication } from "@nestjs/common"
@@ -21,21 +21,28 @@ describe("AuthenticationResolver (e2e)", () => {
     await app.init()
   })
 
-  it("/ (GET)", async () => {
+  describe("Register Temporal User", () => {
     const query = gql`
-      query MyQuery {
-        register
+      mutation RegisterTemporalUser {
+        registerTemporalUser {
+          token
+        }
       }
     `
-    const response = await request(app.getHttpServer())
-      .post("/graphql")
-      .send({
-        query: print(query),
-      })
 
-    deepEqual(
-      { body: response.body },
-      { body: { data: { register: "register" } } }
-    )
+    it("should create a user and return token", async () => {
+      const { body } = await request(app.getHttpServer())
+        .post("/graphql")
+        .send({
+          query: print(query),
+        })
+      ok(body.data.registerTemporalUser.token)
+    })
+  })
+
+  describe.skip("Register Regular User", () => {
+    it("should successfully register user return token", async () => {})
+
+    it("should throw error when email already exists", async () => {})
   })
 })
