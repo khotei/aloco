@@ -1,35 +1,17 @@
-import {
-  Field,
-  ID,
-  Mutation,
-  ObjectType,
-  Query,
-  Resolver,
-} from "@nestjs/graphql"
+import { UseGuards } from "@nestjs/common"
+import { Mutation, Query, Resolver } from "@nestjs/graphql"
 import { JwtService } from "@nestjs/jwt"
 import { InjectRepository } from "@nestjs/typeorm"
-import { Column, Entity, PrimaryGeneratedColumn, Repository } from "typeorm"
+import { Repository } from "typeorm"
 
-@ObjectType()
-class Registration {
-  @Field() // @todo: fix
-  token: string
-}
+import { User } from "@/users/entities/user.entity"
 
-@Entity()
-@ObjectType()
-export class User {
-  @Column({ nullable: true, unique: true })
-  @Field()
-  email: string
-
-  @PrimaryGeneratedColumn()
-  @Field(() => ID)
-  id: number
-
-  @Field()
-  password: string
-}
+import {
+  JwtPayload,
+  type JwtPayloadInterface,
+} from "./decorators/jwt-payload.decorator"
+import { TokenDto } from "./dto/token.dto"
+import { JwtAuthGuard } from "./guards/jwt-auth.guard"
 
 @Resolver()
 export class AuthenticationResolver {
@@ -38,20 +20,23 @@ export class AuthenticationResolver {
     private readonly usersRepo: Repository<User>,
     private readonly jwtService: JwtService
   ) {}
-  @Mutation(() => Registration, { name: "registerTemporalUser" })
-  async createTemporalUser(): Promise<Registration> {
+  @Mutation(() => TokenDto, { name: "registerTemporalUser" })
+  async createTemporalUser(): Promise<TokenDto> {
     const user = await this.usersRepo.save(this.usersRepo.create())
     const token = await this.jwtService.signAsync(
-      { email: user.email, sub: user.id },
+      { email: user.email, sub: user.id } as JwtPayloadInterface,
       {
         secret: "secret",
       }
     )
-    return { token: token }
+    return { token }
   }
 
-  @Query(() => String, { name: "test" })
-  test() {
-    return "test"
+  @UseGuards(JwtAuthGuard)
+  @Query(() => User, { name: "authUser" })
+  async getAuthUser(
+    @JwtPayload() jwtPayload: JwtPayloadInterface
+  ): Promise<User> {
+    return await this.usersRepo.findOne({ where: { id: jwtPayload.sub } })
   }
 }

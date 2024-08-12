@@ -71,11 +71,16 @@ module.exports = tseslint.config(
   },
   ...tseslint.configs.recommended,
   {
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",
+    },
+  },
+  {
     plugins: {
       "unused-imports": unusedImports,
     },
     rules: {
-      "unused-imports/no-unused-imports": 2,
+      "unused-imports/no-unused-imports": "error",
     },
   },
   {
