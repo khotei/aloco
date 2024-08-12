@@ -1,5 +1,6 @@
 schema.graphql
 scheme.generated.ts
+data.sqlite
 
 # compiled output
 /dist

@@ -4,6 +4,7 @@ import { NestFactory } from "@nestjs/core"
 import { AppModule } from "@/app/app.module"
 
 async function bootstrap() {
+  // @todo: disable typeorm
   const app = await NestFactory.create(AppModule)
   await app.init()
 
