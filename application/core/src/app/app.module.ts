@@ -32,10 +32,12 @@ import { PassportModule } from "@/passport/passport.module"
     {
       provide: APP_PIPE,
       useValue: new ValidationPipe({
+        forbidUnknownValues: true,
         transform: true,
         transformOptions: {
           enableImplicitConversion: true,
         },
+        whitelist: true,
       }),
     },
   ],

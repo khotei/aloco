@@ -1,10 +1,12 @@
-﻿import { Field, ID, ObjectType } from "@nestjs/graphql"
+﻿import { Field, Float, ID, ObjectType } from "@nestjs/graphql"
 import {
   Column,
+  CreateDateColumn,
   Entity,
   JoinColumn,
   OneToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from "typeorm"
 
 import { User } from "@/users/entities/user.entity"
@@ -12,6 +14,10 @@ import { User } from "@/users/entities/user.entity"
 @Entity()
 @ObjectType()
 export class UserLocation {
+  @CreateDateColumn()
+  @Field()
+  createdAt: Date
+
   @PrimaryGeneratedColumn()
   @Field(() => ID)
   id: number
@@ -19,8 +25,12 @@ export class UserLocation {
   @Column({
     type: "json",
   })
-  @Field(() => [Number])
+  @Field(() => [Float])
   location: [number, number]
+
+  @UpdateDateColumn()
+  @Field()
+  updatedAt: Date
 
   @JoinColumn()
   @OneToOne(() => User, { eager: true })

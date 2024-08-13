@@ -13,8 +13,7 @@
     "start:prod": "node dist/main",
     "tscheck": "tsc --noEmit",
     "lint": "eslint --fix",
-    "check": "npm run tscheck && npm run lint",
-    "test": "node -r @swc-node/register --test src/**/*.spec.ts",
+    "test": "node  -r @swc-node/register --test src/**/*.spec.ts",
     "test:e2e": "node -r @swc-node/register --test src/**/*.e2e-spec.ts"
   },
   "dependencies": {
@@ -22,6 +21,8 @@
     "@nestjs/common": "^10.0.0",
     "@nestjs/core": "^10.0.0",
     "@nestjs/graphql": "^12.2.0",
+    "@nestjs/jwt": "^10.2.0",
+    "@nestjs/passport": "^10.0.3",
     "@nestjs/platform-express": "^10.0.0",
     "@nestjs/typeorm": "^10.0.2",
     "apollo-server-express": "^3.13.0",
@@ -37,6 +38,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",
+    "@faker-js/faker": "^8.4.1",
     "@graphql-codegen/cli": "^5.0.2",
     "@graphql-codegen/typescript": "^4.0.9",
     "@graphql-codegen/typescript-generic-sdk": "^4.0.1",

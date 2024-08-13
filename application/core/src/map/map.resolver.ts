@@ -3,7 +3,7 @@ import { Args, Mutation, Resolver } from "@nestjs/graphql"
 import { InjectRepository } from "@nestjs/typeorm"
 import type { Repository } from "typeorm"
 
-import { SaveUserLocationInput } from "@/map/dto/save-loation-inpute.dto"
+import { SaveUserLocationInput } from "@/map/dto/save-user-location-input.dto"
 import { UserLocation } from "@/map/entities/user-location.entity"
 import {
   Auth,
