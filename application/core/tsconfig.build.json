@@ -1,5 +1,5 @@
 {
   "extends": "./tsconfig.json",
   "exclude": ["node_modules",
-    "src/passport/test", "dist", "**/*spec.ts"]
+    "src/passport/authentication/test", "dist", "**/*spec.ts"]
 }

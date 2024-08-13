@@ -4,12 +4,10 @@ import { JwtService } from "@nestjs/jwt"
 import { InjectRepository } from "@nestjs/typeorm"
 import { Repository } from "typeorm"
 
+import type { JwtPayload } from "@/passport/authentication/strategies/jwt.strategy"
 import { User } from "@/users/entities/user.entity"
 
-import {
-  JwtPayload,
-  type JwtPayloadInterface,
-} from "./decorators/jwt-payload.decorator"
+import { Auth, type AuthPayload } from "./decorators/auth.decorator"
 import { TokenDto } from "./dto/token.dto"
 import { JwtAuthGuard } from "./guards/jwt-auth.guard"
 
@@ -24,7 +22,7 @@ export class AuthenticationResolver {
   async createTemporalUser(): Promise<TokenDto> {
     const user = await this.usersRepo.save(this.usersRepo.create())
     const token = await this.jwtService.signAsync(
-      { email: user.email, sub: user.id } as JwtPayloadInterface,
+      { sub: user.id } as JwtPayload,
       {
         secret: "secret",
       }
@@ -34,9 +32,7 @@ export class AuthenticationResolver {
 
   @UseGuards(JwtAuthGuard)
   @Query(() => User, { name: "authUser" })
-  async getAuthUser(
-    @JwtPayload() jwtPayload: JwtPayloadInterface
-  ): Promise<User> {
-    return await this.usersRepo.findOne({ where: { id: jwtPayload.sub } })
+  async getAuthUser(@Auth() auth: AuthPayload): Promise<User> {
+    return await this.usersRepo.findOne({ where: { id: auth.userId } })
   }
 }

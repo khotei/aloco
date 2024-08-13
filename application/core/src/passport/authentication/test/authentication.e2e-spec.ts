@@ -9,7 +9,7 @@ import * as request from "supertest"
 
 import { AppModule } from "@/app/app.module"
 
-const registerTemporalUserMutation = gql`
+export const registerTemporalUserMutation = gql`
   mutation RegisterTemporalUser {
     registerTemporalUser {
       token
@@ -17,11 +17,10 @@ const registerTemporalUserMutation = gql`
   }
 `
 
-const authUserQuery = gql`
+export const authUserQuery = gql`
   query AuthUser {
     authUser {
       id
-      email
     }
   }
 `
@@ -39,12 +38,15 @@ describe("AuthenticationResolver (e2e)", () => {
 
   describe("registerTemporalUser", () => {
     it("should create a user and return token", async () => {
-      const { body } = await request(app.getHttpServer())
+      const {
+        body: { data, errors },
+      } = await request(app.getHttpServer())
         .post("/graphql")
         .send({
           query: print(registerTemporalUserMutation),
         })
-      ok(body.data.registerTemporalUser.token)
+      deepEqual(errors, undefined)
+      ok(data.registerTemporalUser.token)
     })
   })
 
@@ -55,6 +57,7 @@ describe("AuthenticationResolver (e2e)", () => {
           data: {
             registerTemporalUser: { token },
           },
+          errors,
         },
       } = await request(app.getHttpServer())
         .post("/graphql")
@@ -67,18 +70,20 @@ describe("AuthenticationResolver (e2e)", () => {
         .send({
           query: print(authUserQuery),
         })
+      deepEqual(errors, undefined)
       ok(body.data.authUser.id)
-      deepEqual(body.data.authUser.email, null)
     })
 
-    it("should throw unauthorization error when user is not authenticated", async () => {
-      const { body } = await request(app.getHttpServer())
+    it("should throw unauthenticated error when user is not authenticated", async () => {
+      const {
+        body: { data, errors },
+      } = await request(app.getHttpServer())
         .post("/graphql")
         .send({
           query: print(authUserQuery),
         })
-      deepEqual(body.data, null)
-      deepEqual(body.errors[0].message, "Unauthorized")
+      deepEqual(data, null)
+      deepEqual(errors[0].message, "Unauthorized")
     })
   })
 })
