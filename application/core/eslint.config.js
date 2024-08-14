@@ -9,6 +9,9 @@ const tseslint = require("typescript-eslint")
 
 module.exports = tseslint.config(
   {
+    ignores: ["dist/**/*", "**/__generated__/**"],
+  },
+  {
     ...eslintPluginPrettierRecommended,
     rules: {
       ...eslintPluginPrettierRecommended.rules,
@@ -82,8 +85,5 @@ module.exports = tseslint.config(
     rules: {
       "unused-imports/no-unused-imports": "error",
     },
-  },
-  {
-    ignores: ["dist/**/*"],
   }
 )

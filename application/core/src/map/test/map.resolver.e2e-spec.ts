@@ -1,31 +1,13 @@
 import { deepEqual, ok } from "node:assert/strict"
-import { beforeEach, describe, it } from "node:test"
+import { afterEach, beforeEach, describe, it } from "node:test"
 
 import { faker } from "@faker-js/faker"
 import { INestApplication } from "@nestjs/common"
 import { Test, TestingModule } from "@nestjs/testing"
-import { print } from "graphql"
-import { gql } from "graphql-tag"
-import * as request from "supertest"
 
 import { AppModule } from "@/app/app.module"
-import {
-  authUserQuery,
-  registerTemporalUserMutation,
-} from "@/passport/authentication/test/authentication.resolver.e2e-spec"
-import type { User } from "@/users/entities/user.entity"
-
-const saveUserLocationMutation = gql`
-  mutation SaveUserLocation($input: SaveUserLocationInput!) {
-    saveUserLocation(saveUserLocationInput: $input) {
-      id
-      user {
-        id
-      }
-      location
-    }
-  }
-`
+import { apprequest } from "@/app/test/apprequest"
+import { User } from "@/users/entities/user.entity"
 
 const fakeLocation = [
   {
@@ -52,48 +34,30 @@ describe("MapResolver (e2e)", () => {
     }).compile()
     app = moduleFixture.createNestApplication()
     await app.init()
+    await app.listen(0)
 
     const {
-      body: {
-        data: {
-          registerTemporalUser: { token },
-        },
-      },
-    } = await request(app.getHttpServer())
-      .post("/graphql")
-      .send({
-        query: print(registerTemporalUserMutation),
-      })
-    const {
-      body: {
-        data: { authUser },
-      },
-    } = await request(app.getHttpServer())
-      .post("/graphql")
+      registerTemporalUser: { token },
+    } = await apprequest(app).getSdk().RegisterTemporalUser()
+    const { authUser } = await apprequest(app)
       .set("Authorization", `Bearer ${token}`)
-      .send({
-        query: print(authUserQuery),
-      })
+      .getSdk()
+      .AuthUser()
     auth.token = token
     auth.user = authUser
+  })
+
+  afterEach(async () => {
+    await app.close()
   })
 
   describe("saveUserLocation", () => {
     it("should create and return a user location", async () => {
       const [location] = fakeLocation
-      const {
-        body: {
-          data: { saveUserLocation: created },
-          errors,
-        },
-      } = await request(app.getHttpServer())
-        .post("/graphql")
+      const { saveUserLocation: created } = await apprequest(app)
         .set("Authorization", `Bearer ${auth.token}`)
-        .send({
-          query: print(saveUserLocationMutation),
-          variables: { input: { location } },
-        })
-      deepEqual(errors, undefined)
+        .getSdk()
+        .SaveUserLocation({ input: { location } })
       const { id, ...rest } = created
       ok(id)
       deepEqual(rest, {
@@ -104,35 +68,19 @@ describe("MapResolver (e2e)", () => {
 
     it("should update and return a user existed location", async () => {
       const [location, updatedLocation] = fakeLocation
-      const {
-        body: {
-          data: { saveUserLocation: created },
-        },
-      } = await request(app.getHttpServer())
-        .post("/graphql")
+      const { saveUserLocation: created } = await apprequest(app)
         .set("Authorization", `Bearer ${auth.token}`)
-        .send({
-          query: print(saveUserLocationMutation),
-          variables: { input: { location } },
-        })
-      const {
-        body: {
-          data: { saveUserLocation: updated },
-          errors,
-        },
-      } = await request(app.getHttpServer())
-        .post("/graphql")
+        .getSdk()
+        .SaveUserLocation({ input: { location } })
+      const { saveUserLocation: updated } = await apprequest(app)
         .set("Authorization", `Bearer ${auth.token}`)
-        .send({
-          query: print(saveUserLocationMutation),
-          variables: {
-            input: {
-              id: created.id,
-              location: updatedLocation,
-            },
+        .getSdk()
+        .SaveUserLocation({
+          input: {
+            id: created.id,
+            location: updatedLocation,
           },
         })
-      deepEqual(errors, undefined)
       deepEqual(updated, {
         id: created.id,
         location: [updatedLocation.lng, updatedLocation.lat],

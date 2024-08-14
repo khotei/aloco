@@ -1,29 +1,11 @@
 import { deepEqual, ok } from "node:assert/strict"
-import { beforeEach, describe, it } from "node:test"
+import { afterEach, beforeEach, describe, it } from "node:test"
 
 import { INestApplication } from "@nestjs/common"
 import { Test, TestingModule } from "@nestjs/testing"
-import { print } from "graphql"
-import { gql } from "graphql-tag"
-import * as request from "supertest"
 
 import { AppModule } from "@/app/app.module"
-
-export const registerTemporalUserMutation = gql`
-  mutation RegisterTemporalUser {
-    registerTemporalUser {
-      token
-    }
-  }
-`
-
-export const authUserQuery = gql`
-  query AuthUser {
-    authUser {
-      id
-    }
-  }
-`
+import { apprequest } from "@/app/test/apprequest"
 
 describe("AuthenticationResolver (e2e)", () => {
   let app: INestApplication
@@ -34,56 +16,40 @@ describe("AuthenticationResolver (e2e)", () => {
     }).compile()
     app = moduleFixture.createNestApplication()
     await app.init()
+    await app.listen(0)
+  })
+
+  afterEach(async () => {
+    await app.close()
   })
 
   describe("registerTemporalUser", () => {
     it("should create a user and return token", async () => {
-      const {
-        body: { data, errors },
-      } = await request(app.getHttpServer())
-        .post("/graphql")
-        .send({
-          query: print(registerTemporalUserMutation),
-        })
-      deepEqual(errors, undefined)
-      ok(data.registerTemporalUser.token)
+      const { registerTemporalUser } = await apprequest(app)
+        .getSdk()
+        .RegisterTemporalUser()
+      ok(registerTemporalUser.token)
     })
   })
 
   describe("authUser", () => {
     it("should return authenticated user", async () => {
-      const {
-        body: {
-          data: {
-            registerTemporalUser: { token },
-          },
-          errors,
-        },
-      } = await request(app.getHttpServer())
-        .post("/graphql")
-        .send({
-          query: print(registerTemporalUserMutation),
-        })
-      const { body } = await request(app.getHttpServer())
-        .post("/graphql")
-        .set("Authorization", `Bearer ${token}`)
-        .send({
-          query: print(authUserQuery),
-        })
-      deepEqual(errors, undefined)
-      ok(body.data.authUser.id)
+      const { registerTemporalUser } = await apprequest(app)
+        .getSdk()
+        .RegisterTemporalUser()
+      const { authUser } = await apprequest(app)
+        .set("Authorization", `Bearer ${registerTemporalUser.token}`)
+        .getSdk()
+        .AuthUser()
+      ok(authUser.id)
     })
 
     it("should throw unauthenticated error when user is not authenticated", async () => {
-      const {
-        body: { data, errors },
-      } = await request(app.getHttpServer())
-        .post("/graphql")
-        .send({
-          query: print(authUserQuery),
-        })
-      deepEqual(data, null)
-      deepEqual(errors[0].message, "Unauthorized")
+      try {
+        await apprequest(app).getSdk().AuthUser()
+      } catch (e) {
+        deepEqual(e.response.errors[0].message, "Unauthorized")
+      }
     })
   })
 })
