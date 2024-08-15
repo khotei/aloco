@@ -25,29 +25,35 @@ describe("AuthenticationResolver (e2e)", () => {
 
   describe("registerTemporalUser", () => {
     it("should create a user and return token", async () => {
-      const { registerTemporalUser } = await apprequest(app)
-        .getSdk()
-        .RegisterTemporalUser()
+      const { registerTemporalUser } = await apprequest({
+        app,
+      }).RegisterTemporalUser()
       ok(registerTemporalUser.token)
     })
   })
 
   describe("authUser", () => {
     it("should return authenticated user", async () => {
-      const { registerTemporalUser } = await apprequest(app)
-        .getSdk()
-        .RegisterTemporalUser()
-      const { authUser } = await apprequest(app)
-        .set("Authorization", `Bearer ${registerTemporalUser.token}`)
-        .getSdk()
-        .AuthUser()
-      ok(authUser.id)
+      const { registerTemporalUser } = await apprequest({
+        app,
+      }).RegisterTemporalUser()
+      ok(registerTemporalUser.token)
+      const {
+        authUser: { user },
+      } = await apprequest({
+        app,
+        headers: {
+          Authorization: `Bearer ${registerTemporalUser.token}`,
+        },
+      }).AuthUser()
+      ok(user.id)
     })
 
     it("should throw unauthenticated error when user is not authenticated", async () => {
       try {
-        await apprequest(app).getSdk().AuthUser()
+        await apprequest({ app }).AuthUser()
       } catch (e) {
+        console.log(e)
         deepEqual(e.response.errors[0].message, "Unauthorized")
       }
     })

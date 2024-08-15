@@ -11,9 +11,12 @@ async function bootstrap() {
 
   await generate(
     {
-      documents: "**/documents/**",
+      documents: "**/*.document.graphql",
       generates: {
         "src/__generated__/scheme.generated.ts": {
+          config: {
+            rawRequest: false,
+          },
           plugins: [
             "typescript",
             "typescript-operations",

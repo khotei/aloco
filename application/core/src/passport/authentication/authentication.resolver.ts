@@ -4,6 +4,7 @@ import { JwtService } from "@nestjs/jwt"
 import { InjectRepository } from "@nestjs/typeorm"
 import { Repository } from "typeorm"
 
+import { AuthDto } from "@/passport/authentication/dto/auth.dto"
 import type { JwtPayload } from "@/passport/authentication/strategies/jwt.strategy"
 import { User } from "@/users/entities/user.entity"
 
@@ -31,8 +32,9 @@ export class AuthenticationResolver {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Query(() => User, { name: "authUser" })
-  async getAuthUser(@Auth() auth: AuthPayload): Promise<User> {
-    return await this.usersRepo.findOne({ where: { id: auth.userId } })
+  @Query(() => AuthDto, { name: "authUser" })
+  async getAuthUser(@Auth() auth: AuthPayload): Promise<{ user: User }> {
+    const user = await this.usersRepo.findOne({ where: { id: auth.userId } })
+    return { user }
   }
 }

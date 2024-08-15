@@ -1,0 +1,5 @@
+mutation RegisterTemporalUser {
+    registerTemporalUser {
+        token
+    }
+}

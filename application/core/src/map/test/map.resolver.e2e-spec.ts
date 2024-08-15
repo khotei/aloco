@@ -5,9 +5,9 @@ import { faker } from "@faker-js/faker"
 import { INestApplication } from "@nestjs/common"
 import { Test, TestingModule } from "@nestjs/testing"
 
+import type { User } from "@/__generated__/scheme.generated"
 import { AppModule } from "@/app/app.module"
 import { apprequest } from "@/app/test/apprequest"
-import { User } from "@/users/entities/user.entity"
 
 const fakeLocation = [
   {
@@ -26,7 +26,7 @@ const fakeLocation = [
 
 describe("MapResolver (e2e)", () => {
   let app: INestApplication
-  const auth: { token: string; user: User } | Record<any, any> = {}
+  const auth: Partial<{ token: string; user: Partial<User> }> = {}
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -38,13 +38,17 @@ describe("MapResolver (e2e)", () => {
 
     const {
       registerTemporalUser: { token },
-    } = await apprequest(app).getSdk().RegisterTemporalUser()
-    const { authUser } = await apprequest(app)
-      .set("Authorization", `Bearer ${token}`)
-      .getSdk()
-      .AuthUser()
+    } = await apprequest({ app }).RegisterTemporalUser()
+    const {
+      authUser: { user },
+    } = await apprequest({
+      app,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }).AuthUser()
     auth.token = token
-    auth.user = authUser
+    auth.user = user
   })
 
   afterEach(async () => {
@@ -54,10 +58,12 @@ describe("MapResolver (e2e)", () => {
   describe("saveUserLocation", () => {
     it("should create and return a user location", async () => {
       const [location] = fakeLocation
-      const { saveUserLocation: created } = await apprequest(app)
-        .set("Authorization", `Bearer ${auth.token}`)
-        .getSdk()
-        .SaveUserLocation({ input: { location } })
+      const { saveUserLocation: created } = await apprequest({
+        app,
+        headers: {
+          Authorization: `Bearer ${auth.token}`,
+        },
+      }).SaveUserLocation({ input: { location } })
       const { id, ...rest } = created
       ok(id)
       deepEqual(rest, {
@@ -68,19 +74,23 @@ describe("MapResolver (e2e)", () => {
 
     it("should update and return a user existed location", async () => {
       const [location, updatedLocation] = fakeLocation
-      const { saveUserLocation: created } = await apprequest(app)
-        .set("Authorization", `Bearer ${auth.token}`)
-        .getSdk()
-        .SaveUserLocation({ input: { location } })
-      const { saveUserLocation: updated } = await apprequest(app)
-        .set("Authorization", `Bearer ${auth.token}`)
-        .getSdk()
-        .SaveUserLocation({
-          input: {
-            id: created.id,
-            location: updatedLocation,
-          },
-        })
+      const { saveUserLocation: created } = await apprequest({
+        app,
+        headers: {
+          Authorization: `Bearer ${auth.token}`,
+        },
+      }).SaveUserLocation({ input: { location } })
+      const { saveUserLocation: updated } = await apprequest({
+        app,
+        headers: {
+          Authorization: `Bearer ${auth.token}`,
+        },
+      }).SaveUserLocation({
+        input: {
+          id: created.id,
+          location: updatedLocation,
+        },
+      })
       deepEqual(updated, {
         id: created.id,
         location: [updatedLocation.lng, updatedLocation.lat],
