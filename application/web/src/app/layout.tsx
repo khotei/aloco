@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 
+import { ChakraProvider } from '@chakra-ui/react'
+import type {ReactNode} from "react";
+
 export const metadata: Metadata = {
   title: "Fuck Programming",
   description: "Become rage on hard things.",
@@ -7,12 +10,19 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
+  signup
 }: Readonly<{
-  children: React.ReactNode;
+  children: ReactNode;
+  signup: ReactNode
 }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+      <ChakraProvider>
+              {children}
+                {signup}
+      </ChakraProvider>
+      </body>
     </html>
   );
 }
