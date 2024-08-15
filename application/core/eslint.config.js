@@ -1,16 +1,11 @@
-// eslint-disable-next-line @typescript-eslint/no-require-imports
+const js = require("@eslint/js")
 const perfectionistPlugin = require("eslint-plugin-perfectionist")
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const eslintPluginPrettierRecommended = require("eslint-plugin-prettier/recommended")
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const unusedImports = require("eslint-plugin-unused-imports")
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const tseslint = require("typescript-eslint")
 
 module.exports = tseslint.config(
-  {
-    ignores: ["dist/**/*", "**/__generated__/**"],
-  },
+  js.configs.recommended,
   {
     ...eslintPluginPrettierRecommended,
     rules: {
@@ -85,5 +80,8 @@ module.exports = tseslint.config(
     rules: {
       "unused-imports/no-unused-imports": "error",
     },
+  },
+  {
+    ignores: ["eslint.config.js", "dist/", "src/__generated__/"],
   }
 )
