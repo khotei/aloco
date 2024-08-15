@@ -12,7 +12,7 @@
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "tscheck": "tsc --noEmit",
-    "lint": "eslint --fix .",
+    "lint": "eslint --fix",
     "test": "node -r ts-node/register --test src/**/*.spec.ts",
     "test:e2e": "node -r ts-node/register --test src/**/*.e2e-spec.ts"
   },
