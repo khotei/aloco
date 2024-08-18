@@ -6,7 +6,7 @@ import { TypeOrmModule } from "@nestjs/typeorm"
 import { JwtStrategy } from "@/passport/authentication/strategies/jwt.strategy"
 import { User } from "@/users/entities/user.entity"
 
-import { AuthenticationResolver } from "./authentication/authentication.resolver"
+import { AuthenticationResolver } from "./authentication/resolvers/authentication.resolver"
 
 @Module({
   imports: [

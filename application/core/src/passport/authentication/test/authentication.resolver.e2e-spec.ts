@@ -53,7 +53,6 @@ describe("AuthenticationResolver (e2e)", () => {
       try {
         await apprequest({ app }).AuthUser()
       } catch (e) {
-        console.log(e)
         deepEqual(e.response.errors[0].message, "Unauthorized")
       }
     })

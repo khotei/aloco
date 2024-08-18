@@ -58,7 +58,9 @@ describe("MapResolver (e2e)", () => {
   describe("saveUserLocation", () => {
     it("should create and return a user location", async () => {
       const [location] = fakeLocation
-      const { saveUserLocation: created } = await apprequest({
+      const {
+        saveUserLocation: { userLocation: created },
+      } = await apprequest({
         app,
         headers: {
           Authorization: `Bearer ${auth.token}`,
@@ -74,13 +76,17 @@ describe("MapResolver (e2e)", () => {
 
     it("should update and return a user existed location", async () => {
       const [location, updatedLocation] = fakeLocation
-      const { saveUserLocation: created } = await apprequest({
+      const {
+        saveUserLocation: { userLocation: created },
+      } = await apprequest({
         app,
         headers: {
           Authorization: `Bearer ${auth.token}`,
         },
       }).SaveUserLocation({ input: { location } })
-      const { saveUserLocation: updated } = await apprequest({
+      const {
+        saveUserLocation: { userLocation: updated },
+      } = await apprequest({
         app,
         headers: {
           Authorization: `Bearer ${auth.token}`,

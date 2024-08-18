@@ -8,9 +8,9 @@ import { AuthDto } from "@/passport/authentication/dto/auth.dto"
 import type { JwtPayload } from "@/passport/authentication/strategies/jwt.strategy"
 import { User } from "@/users/entities/user.entity"
 
-import { Auth, type AuthPayload } from "./decorators/auth.decorator"
-import { TokenDto } from "./dto/token.dto"
-import { JwtAuthGuard } from "./guards/jwt-auth.guard"
+import { Auth, type AuthPayload } from "../decorators/auth.decorator"
+import { TokenResponseDto } from "../dto/token-response.dto"
+import { JwtAuthGuard } from "../guards/jwt-auth.guard"
 
 @Resolver()
 export class AuthenticationResolver {
@@ -19,8 +19,8 @@ export class AuthenticationResolver {
     private readonly usersRepo: Repository<User>,
     private readonly jwtService: JwtService
   ) {}
-  @Mutation(() => TokenDto, { name: "registerTemporalUser" })
-  async createTemporalUser(): Promise<TokenDto> {
+  @Mutation(() => TokenResponseDto, { name: "registerTemporalUser" })
+  async createTemporalUser(): Promise<TokenResponseDto> {
     const user = await this.usersRepo.save(this.usersRepo.create())
     const token = await this.jwtService.signAsync(
       { sub: user.id } as JwtPayload,
