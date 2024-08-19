@@ -2,7 +2,14 @@
   "tasks": {
     "lint": {},
     "tscheck": {},
-    "codegen": {},
-    "dev": {}
+    "codegen": {
+      "cache": false
+    },
+    "web#codegen": {
+      "dependsOn": ["core#codegen"]
+    },
+    "dev": {
+      "dependsOn": ["codegen"]
+    }
   }
 }
