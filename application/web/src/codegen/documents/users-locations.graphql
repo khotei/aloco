@@ -1,0 +1,11 @@
+query UsersLocations {
+    usersLocations {
+        usersLocations {
+            id
+            location
+            user {
+                id
+            }
+        }
+    }
+}
