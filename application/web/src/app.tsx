@@ -1,67 +1,31 @@
-import {ApolloClient, ApolloProvider, InMemoryCache} from "@apollo/client";
-import {createContext, type ReactNode, useContext, useMemo} from "react";
-import {useLocalStorage} from "@uidotdev/usehooks";
-import { ChakraProvider } from '@chakra-ui/react'
+import {ChakraProvider, Spinner} from '@chakra-ui/react'
 import {createRouter, RouterProvider} from "@tanstack/react-router";
-import { routeTree } from './routeTree.gen'
+import {Suspense, useMemo} from "react";
 
-const tokenCtx = createContext<[string | undefined | null, (token: undefined | null | string) => void] | undefined>(undefined)
-
-const useToken = () => {
-  const ctx = useContext(tokenCtx)
-  if(!ctx) {
-    throw new Error('You should be wrapped into TokenProvider.')
-  } else {
-    return ctx;
-  }
-}
-
-const TokenProvider = ({ children, token }: { children: ReactNode, token: string | null }) => {
-  const ctx = useLocalStorage<null | undefined | string>("token", token);
-  return <tokenCtx.Provider value={ctx}>
-    {children}
-  </tokenCtx.Provider>
-}
-
-
-// Create a new router instance
-const router = createRouter({ routeTree })
+import {routeTree} from '@/codegen/__generated__/routes'
+import {ApolloClientProvider} from "@/components/apollo-client/apollo-client";
+import {AuthInitializer} from "@/components/auth-initializer";
+import {TokenProvider} from "@/components/token";
 
 export function App() {
-  const [token] = useLocalStorage("token", null);
-  /**
-   * @todo: if no token then create user and set token
-   */
-  /**
-   * @todo: if token exists -> fetch auth user
-   */
+  const token = useMemo(() => window.localStorage.getItem("token"), [])
+  const router = useMemo(() => createRouter({routeTree}), [])
+
   return (
     <ChakraProvider>
       <TokenProvider token={token}>
-        <ClientProvider>
-          <RouterProvider router={router} />
-        </ClientProvider>
+        {
+          (token) => (
+            <ApolloClientProvider token={token}>
+              <Suspense fallback={<Spinner/>}>
+                <AuthInitializer/>
+                <RouterProvider router={router}/>
+              </Suspense>
+            </ApolloClientProvider>
+          )
+        }
       </TokenProvider>
     </ChakraProvider>
-
   )
 }
 
-function ClientProvider({ children }: { children: ReactNode }) {
-  const [token] = useToken()
-  const client = useMemo(() => new ApolloClient({
-    uri: 'http://localhost:4000',
-    cache: new InMemoryCache(),
-    defaultContext: {
-      headers: {
-        ...(token ? { Authorization: `Bearer ${token}` } : undefined),
-      }
-    }
-  }), [])
-
-  return (
-    <ApolloProvider client={client}>
-      {children}
-    </ApolloProvider>
-  )
-}

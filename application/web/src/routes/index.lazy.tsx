@@ -1,9 +1,10 @@
-import { createLazyFileRoute } from '@tanstack/react-router'
 import {Box, Button, Container, Flex, useDisclosure} from "@chakra-ui/react";
-import {type ReactNode} from "react";
-import {APIProvider, Map, AdvancedMarker, useAdvancedMarkerRef, InfoWindow, Pin} from '@vis.gl/react-google-maps';
+import { createLazyFileRoute } from '@tanstack/react-router'
 import { useGeolocation } from '@uidotdev/usehooks';
-import type {User} from "../codegen/__generated__/graphql";
+import {AdvancedMarker, APIProvider, InfoWindow, Map, Pin, useAdvancedMarkerRef} from '@vis.gl/react-google-maps';
+import {type ReactNode} from "react";
+
+import type {User} from "@/codegen/__generated__/gql/graphql";
 
 const GOOGLE_MAPS_API_KEY = 'AIzaSyCUZf3em7J8q8WkWOfjJ1B9c5N1aKrDiVI'
 
@@ -11,7 +12,7 @@ export const Route = createLazyFileRoute('/')({
   component: () => <main>
     <Flex as={'header'}>
       <Container maxW={'4xl'}>
-        <Flex justify={'space-between'}  p={2} align={'center'}>
+        <Flex align={'center'}  justify={'space-between'} p={2}>
           <Box>
             fuckprogramming
           </Box>
@@ -55,9 +56,9 @@ export const Route = createLazyFileRoute('/')({
   return (
     <Box h={'calc(100vh - 40px)'}>
       <APIProvider apiKey={GOOGLE_MAPS_API_KEY}><Map
-        mapId={'worldMap'}
         defaultCenter={{lat: latitude ?? 50.3907625, lng: longitude ?? 30.635667999999995}}
         defaultZoom={14}
+        mapId={'worldMap'}
       />
         {markers}
       </APIProvider>
@@ -65,7 +66,7 @@ export const Route = createLazyFileRoute('/')({
   )
 }
 
-export function UserMarker({location}: {location: {lng: number, lat: number}, user: User, authUser: User}) {
+export function UserMarker({authUser, location, user}: {authUser: User, location: {lat: number, lng: number}, user: User}) {
   const [markerRef, marker] = useAdvancedMarkerRef()
   const { isOpen, onClose, onOpen } = useDisclosure()
 
@@ -80,7 +81,7 @@ export function UserMarker({location}: {location: {lng: number, lat: number}, us
           anchor={marker}
           onClose={onClose}
         >
-          {true ? 'You' : 'Other'}
+          {authUser.id === user.id ? 'You' : 'Other'}
         </InfoWindow>
       ) : (
         <Pin />
