@@ -1,46 +1,24 @@
 const js = require("@eslint/js")
-const perfectionistPlugin = require("eslint-plugin-perfectionist")
-const eslintPluginPrettierRecommended = require("eslint-plugin-prettier/recommended")
+const perfectionist = require("eslint-plugin-perfectionist")
+const prettier = require("eslint-plugin-prettier/recommended")
 const unusedImports = require("eslint-plugin-unused-imports")
 const tseslint = require("typescript-eslint")
 
 module.exports = tseslint.config(
-  js.configs.recommended,
   {
-    ...eslintPluginPrettierRecommended,
+    ignores: ["eslint.config.js", "dist/", "src/__generated__/"],
+  },
+  js.configs.recommended,
+  ...tseslint.configs.recommended,
+  {
     rules: {
-      ...eslintPluginPrettierRecommended.rules,
-      "prettier/prettier": [
-        "error",
-        {
-          arrowParens: "always",
-          bracketSameLine: false,
-          bracketSpacing: true,
-          endOfLine: "auto",
-          htmlWhitespaceSensitivity: "css",
-          insertPragma: false,
-          jsxSingleQuote: true,
-          printWidth: 80,
-          proseWrap: "preserve",
-          quoteProps: "as-needed",
-          requirePragma: false,
-          semi: false,
-          singleAttributePerLine: true,
-          singleQuote: false,
-          tabWidth: 2,
-          trailingComma: "es5",
-        },
-      ],
+      "@typescript-eslint/no-explicit-any": "off",
     },
   },
   {
-    ...perfectionistPlugin.configs["recommended-alphabetical"],
-    plugins: {
-      perfectionistPlugin,
-      ...perfectionistPlugin.configs["recommended-alphabetical"].plugins,
-    },
+    ...perfectionist.configs["recommended-alphabetical"],
     rules: {
-      ...perfectionistPlugin.configs["recommended-alphabetical"].rules,
+      ...perfectionist.configs["recommended-alphabetical"].rules,
       "perfectionist/sort-imports": [
         "error",
         {
@@ -67,12 +45,6 @@ module.exports = tseslint.config(
       ],
     },
   },
-  ...tseslint.configs.recommended,
-  {
-    rules: {
-      "@typescript-eslint/no-explicit-any": "off",
-    },
-  },
   {
     plugins: {
       "unused-imports": unusedImports,
@@ -82,6 +54,30 @@ module.exports = tseslint.config(
     },
   },
   {
-    ignores: ["eslint.config.js", "dist/", "src/__generated__/"],
+    ...prettier,
+    rules: {
+      ...prettier.rules,
+      "prettier/prettier": [
+        "error",
+        {
+          arrowParens: "always",
+          bracketSameLine: true ,
+          bracketSpacing: true,
+          endOfLine: "auto",
+          htmlWhitespaceSensitivity: "css",
+          insertPragma: false,
+          jsxSingleQuote: true,
+          printWidth: 80,
+          proseWrap: "preserve",
+          quoteProps: "as-needed",
+          requirePragma: false,
+          semi: false,
+          singleAttributePerLine: true,
+          singleQuote: false,
+          tabWidth: 2,
+          trailingComma: "es5",
+        },
+      ],
+    },
   }
 )

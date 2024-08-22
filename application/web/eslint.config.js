@@ -1,51 +1,26 @@
 const { fixupPluginRules } = require("@eslint/compat")
 const js = require("@eslint/js")
-const perfectionistPlugin = require("eslint-plugin-perfectionist")
-const eslintPluginPrettierRecommended = require("eslint-plugin-prettier/recommended")
+const perfectionist = require("eslint-plugin-perfectionist")
+const prettier = require("eslint-plugin-prettier/recommended")
+const react = require("eslint-plugin-react")
 const reactHooks = require("eslint-plugin-react-hooks")
 const reactRefresh = require("eslint-plugin-react-refresh")
 const unusedImports = require("eslint-plugin-unused-imports")
 const tseslint = require("typescript-eslint")
 
 module.exports = tseslint.config(
+  {ignores: ['eslint.config.js', 'dist', './src/codegen/__generated__/**/*']},
   js.configs.recommended,
   ...tseslint.configs.recommended,
-  {ignores: ['eslint.config.js', 'dist', './src/codegen/__generated__/**/*']},
   {
-    ...eslintPluginPrettierRecommended,
     rules: {
-      ...eslintPluginPrettierRecommended.rules,
-      "prettier/prettier": [
-        "error",
-        {
-          arrowParens: "always",
-          bracketSameLine: false,
-          bracketSpacing: true,
-          endOfLine: "auto",
-          htmlWhitespaceSensitivity: "css",
-          insertPragma: false,
-          jsxSingleQuote: true,
-          printWidth: 80,
-          proseWrap: "preserve",
-          quoteProps: "as-needed",
-          requirePragma: true,
-          semi: false,
-          singleAttributePerLine: true,
-          singleQuote: false,
-          tabWidth: 2,
-          trailingComma: "es5",
-        },
-      ],
+      "@typescript-eslint/no-explicit-any": "off",
     },
   },
   {
-    ...perfectionistPlugin.configs["recommended-alphabetical"],
-    plugins: {
-      perfectionistPlugin,
-      ...perfectionistPlugin.configs["recommended-alphabetical"].plugins,
-    },
+    ...perfectionist.configs["recommended-alphabetical"],
     rules: {
-      ...perfectionistPlugin.configs["recommended-alphabetical"].rules,
+      ...perfectionist.configs["recommended-alphabetical"].rules,
       "perfectionist/sort-imports": [
         "error",
         {
@@ -74,28 +49,58 @@ module.exports = tseslint.config(
   },
   {
     plugins: {
-      'react-hooks': fixupPluginRules(reactHooks),
-      'react-refresh': fixupPluginRules(reactRefresh),
-    },
-    rules: {
-      ...reactHooks.configs.recommended.rules,
-      'react-refresh/only-export-components': [
-        'warn',
-        { allowConstantExport: true },
-      ],
-    },
-  },
-  {
-    rules: {
-      "@typescript-eslint/no-explicit-any": "off",
-    },
-  },
-  {
-    plugins: {
       "unused-imports": unusedImports,
     },
     rules: {
       "unused-imports/no-unused-imports": "error",
     },
   },
+  {
+    plugins: {
+      'react': fixupPluginRules(react),
+      'react-hooks': fixupPluginRules(reactHooks),
+      'react-refresh': fixupPluginRules(reactRefresh),
+    },
+    settings: {
+      react: {
+        version: "detect",
+      }
+    },
+    rules: {
+      ...react.configs.recommended.rules,
+      ...reactHooks.configs.recommended.rules,
+      'react-refresh/only-export-components': [
+        'warn',
+        { allowConstantExport: true },
+      ],
+      'react/react-in-jsx-scope': 'off'
+    },
+  },
+  {
+    ...prettier,
+    rules: {
+      ...prettier.rules,
+      "prettier/prettier": [
+        "error",
+        {
+          arrowParens: "always",
+          bracketSameLine: true ,
+          bracketSpacing: true,
+          endOfLine: "auto",
+          htmlWhitespaceSensitivity: "css",
+          insertPragma: false,
+          jsxSingleQuote: true,
+          printWidth: 80,
+          proseWrap: "preserve",
+          quoteProps: "as-needed",
+          requirePragma: false,
+          semi: false,
+          singleAttributePerLine: true,
+          singleQuote: false,
+          tabWidth: 2,
+          trailingComma: "es5",
+        },
+      ],
+    },
+  }
 )

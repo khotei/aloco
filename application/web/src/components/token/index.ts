@@ -1,1 +1,2 @@
-export {TokenProvider, useToken} from "./token";
+export { TokenProvider } from "./token"
+export { useToken } from "./use-token"

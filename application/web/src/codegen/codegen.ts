@@ -1,22 +1,21 @@
-import {join} from "node:path"
+import { join } from "node:path"
 
 import { generate as gengql } from "@graphql-codegen/cli"
-import {generator as genrouter } from "@tanstack/router-generator";
+import { generator as genrouter } from "@tanstack/router-generator"
 
 Promise.all([
   gengql(
     {
-      documents: join(__dirname, './documents/**/*.graphql'),
+      documents: join(__dirname, "./documents/**/*.graphql"),
       generates: {
-        [`${join(__dirname, './__generated__')}/gql/`]: {
+        [`${join(__dirname, "./__generated__")}/gql/`]: {
           config: {
-            apolloReactHooksImportFrom: '@apollo/client'
+            apolloReactHooksImportFrom: "@apollo/client",
           },
-          preset: 'client'
+          preset: "client",
         },
-
       },
-      schema: join(__dirname, '../../../core/src/__generated__/schema.graphql'),
+      schema: join(__dirname, "../../../core/src/__generated__/schema.graphql"),
     },
     true
   ),
@@ -26,12 +25,12 @@ Promise.all([
     disableManifestGeneration: false,
     disableTypes: false,
     experimental: {},
-    generatedRouteTree: join(__dirname, './__generated__/routes.ts'),
-    quoteStyle: 'double',
-    routeFileIgnorePrefix: '-',
-    routesDirectory: join(__dirname, '../routes'),
+    generatedRouteTree: join(__dirname, "./__generated__/routes.ts"),
+    quoteStyle: "double",
+    routeFileIgnorePrefix: "-",
+    routesDirectory: join(__dirname, "../routes"),
     routeTreeFileFooter: [],
     routeTreeFileHeader: [],
     semicolons: false,
-  })
+  }),
 ])
