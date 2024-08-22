@@ -11,7 +11,7 @@ import {
 } from "@vis.gl/react-google-maps"
 import { useEffect } from "react"
 
-import type { User } from "@/codegen/__generated__/gql/graphql"
+import type { UserFragmentFragment } from "@/codegen/__generated__/gql/graphql"
 import { useAuthUser } from "@/hooks/use-auth-user"
 import { useSaveUserLocation } from "@/hooks/use-save-user-location"
 import { useUsersLocations } from "@/hooks/use-users-locations"
@@ -97,9 +97,9 @@ export function UserMarker({
   location,
   user,
 }: {
-  authUser: User
+  authUser: UserFragmentFragment
   location: { lat: number; lng: number }
-  user: User
+  user: UserFragmentFragment
 }) {
   const [markerRef, marker] = useAdvancedMarkerRef()
   const { isOpen, onClose, onOpen } = useDisclosure()

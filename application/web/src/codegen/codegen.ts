@@ -10,9 +10,12 @@ Promise.all([
       generates: {
         [`${join(__dirname, "./__generated__")}/gql/`]: {
           config: {
-            apolloReactHooksImportFrom: "@apollo/client",
+            skipTypename: true,
           },
           preset: "client",
+          presetConfig: {
+            fragmentMasking: false,
+          },
         },
       },
       schema: join(__dirname, "../../../core/src/__generated__/schema.graphql"),

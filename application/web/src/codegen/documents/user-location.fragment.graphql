@@ -1,0 +1,7 @@
+fragment UserLocationFragment on UserLocation {
+    id
+    user {
+        ...UserFragment
+    }
+    location
+}
