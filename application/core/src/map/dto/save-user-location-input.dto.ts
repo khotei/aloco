@@ -1,5 +1,5 @@
-import { Field, ID, InputType } from "@nestjs/graphql"
-import { IsNumber, IsOptional, ValidateNested } from "class-validator"
+import { Field, InputType } from "@nestjs/graphql"
+import { IsNumber, ValidateNested } from "class-validator"
 
 @InputType()
 class LocationInput {
@@ -14,11 +14,6 @@ class LocationInput {
 
 @InputType()
 export class SaveUserLocationInput {
-  @IsOptional()
-  @IsNumber()
-  @Field(() => ID, { nullable: true })
-  id?: number
-
   @ValidateNested()
   @Field(() => LocationInput)
   location: LocationInput

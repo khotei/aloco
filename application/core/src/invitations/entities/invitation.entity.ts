@@ -4,7 +4,7 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
-  OneToOne,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm"
@@ -35,12 +35,12 @@ export class Invitation {
   id: number
 
   @JoinColumn()
-  @OneToOne(() => User, { eager: true })
+  @ManyToOne(() => User, { eager: true })
   @Field(() => User)
   receiver: User
 
   @JoinColumn()
-  @OneToOne(() => User, { eager: true })
+  @ManyToOne(() => User, { eager: true })
   @Field(() => User)
   sender: User
 

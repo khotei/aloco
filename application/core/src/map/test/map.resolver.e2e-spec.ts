@@ -59,7 +59,7 @@ describe("MapResolver (e2e)", () => {
       const { id, ...rest } = created
       ok(id)
       deepEqual(rest, {
-        location: [location.lng, location.lat],
+        location: [location.lat, location.lng],
         user: auths.at(0).user,
       })
     })
@@ -79,13 +79,12 @@ describe("MapResolver (e2e)", () => {
         token: auths.at(0).token,
       }).SaveUserLocation({
         input: {
-          id: created.id,
           location: updatedLocation,
         },
       })
       deepEqual(updated, {
         id: created.id,
-        location: [updatedLocation.lng, updatedLocation.lat],
+        location: [updatedLocation.lat, updatedLocation.lng],
         user: auths.at(0).user,
       })
     })

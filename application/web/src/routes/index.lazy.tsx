@@ -1,4 +1,11 @@
-import { Box, Button, Container, Flex, useDisclosure } from "@chakra-ui/react"
+import {
+  Box,
+  Button,
+  Container,
+  Flex,
+  Text,
+  useDisclosure,
+} from "@chakra-ui/react"
 import { createLazyFileRoute } from "@tanstack/react-router"
 import { useGeolocation } from "@uidotdev/usehooks"
 import {
@@ -9,11 +16,15 @@ import {
   Pin,
   useAdvancedMarkerRef,
 } from "@vis.gl/react-google-maps"
-import { useEffect } from "react"
+import { useCallback, useEffect } from "react"
 
-import type { UserFragmentFragment } from "@/codegen/__generated__/gql/graphql"
+import {
+  InvitationStatus,
+  type UserFragmentFragment,
+} from "@/codegen/__generated__/gql/graphql"
 import { useAuthUser } from "@/hooks/use-auth-user"
 import { useSaveUserLocation } from "@/hooks/use-save-user-location"
+import { useSendInvitation } from "@/hooks/use-send-invitation"
 import { useUsersLocations } from "@/hooks/use-users-locations"
 
 const GOOGLE_MAPS_API_KEY = "AIzaSyCUZf3em7J8q8WkWOfjJ1B9c5N1aKrDiVI"
@@ -83,7 +94,7 @@ function WorldMap() {
             <UserMarker
               authUser={authData?.authUser.user}
               key={ul.id}
-              location={{ lat: ul.location[1], lng: ul.location[0] }}
+              location={{ lat: ul.location[0], lng: ul.location[1] }}
               user={ul.user}
             />
           ))}
@@ -104,6 +115,20 @@ export function UserMarker({
   const [markerRef, marker] = useAdvancedMarkerRef()
   const { isOpen, onClose, onOpen } = useDisclosure()
 
+  const [send, { loading }] = useSendInvitation()
+  const handleSendClick = useCallback(() => {
+    send({
+      variables: {
+        input: {
+          receiverId: user.id,
+          status: InvitationStatus.Pending,
+        },
+      },
+    })
+  }, [user])
+
+  const currentUser = authUser.id === user.id
+
   return (
     <AdvancedMarker
       onClick={onOpen}
@@ -113,7 +138,18 @@ export function UserMarker({
         <InfoWindow
           anchor={marker}
           onClose={onClose}>
-          {authUser.id === user.id ? "You" : "Other"}
+          <Flex direction={"column"}>
+            <Text>{currentUser ? "You" : "Other"}</Text>
+            {currentUser ? null : (
+              <Box>
+                <Button
+                  isLoading={loading}
+                  onClick={handleSendClick}>
+                  Invite
+                </Button>
+              </Box>
+            )}
+          </Flex>
         </InfoWindow>
       ) : (
         <Pin />

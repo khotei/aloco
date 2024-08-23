@@ -41,7 +41,6 @@ export class InvitationsResolver {
           },
         ],
       })
-
       await this.invitationsRepo.save(
         this.invitationsRepo.merge(invitation, input)
       )
@@ -52,7 +51,7 @@ export class InvitationsResolver {
       })
       const invitation = await this.invitationsRepo.save(
         this.invitationsRepo.create({
-          receiver,
+          receiver: receiver,
           sender: user,
           status: input.status,
         })

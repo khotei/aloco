@@ -1,0 +1,7 @@
+mutation SendInvitation($input: SendInvitationInput!) {
+    sendInvitation(sendInvitationInput: $input) {
+        invitation {
+            ...InvitationFragment
+        }
+    }
+}

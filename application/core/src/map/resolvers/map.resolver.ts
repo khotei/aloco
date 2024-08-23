@@ -26,9 +26,7 @@ export class MapResolver {
   @UseGuards(JwtAuthGuard)
   @Query(() => UsersLocationsResponse, { name: "usersLocations" })
   async find(): Promise<UsersLocationsResponse> {
-    const usersLocations = await this.userLocationRepo.find({
-      relations: { user: true },
-    })
+    const usersLocations = await this.userLocationRepo.find()
     return { usersLocations }
   }
 
@@ -39,18 +37,24 @@ export class MapResolver {
     @Args("saveUserLocationInput") input: SaveUserLocationInput
   ): Promise<UserLocationResponse> {
     const user = await this.userRepo.findOneByOrFail({ id: auth.userId })
-    const userLocation = input.id
-      ? await this.userLocationRepo.preload({
-          id: input.id,
-          location: [input.location.lng, input.location.lat],
+    const userLocation = await this.userLocationRepo.findOneBy({
+      user: { id: user.id },
+    })
+    if (userLocation) {
+      await this.userLocationRepo.save(
+        this.userLocationRepo.merge(userLocation, {
+          location: [input.location.lat, input.location.lng],
+        })
+      )
+      return { userLocation }
+    } else {
+      const userLocation = await this.userLocationRepo.save(
+        this.userLocationRepo.create({
+          location: [input.location.lat, input.location.lng],
           user,
         })
-      : await this.userLocationRepo.save(
-          this.userLocationRepo.create({
-            location: [input.location.lng, input.location.lat],
-            user,
-          })
-        )
-    return { userLocation }
+      )
+      return { userLocation }
+    }
   }
 }
