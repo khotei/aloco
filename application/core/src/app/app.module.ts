@@ -1,11 +1,16 @@
 import { join } from "node:path"
 
-import { ApolloDriver, type ApolloDriverConfig } from "@nestjs/apollo"
+import {
+  ApolloDriver,
+  type ApolloDriverConfig,
+  ValidationError,
+} from "@nestjs/apollo"
 import { Module, ValidationPipe } from "@nestjs/common"
 import { APP_PIPE } from "@nestjs/core"
 import { GraphQLModule } from "@nestjs/graphql"
 import { TypeOrmModule } from "@nestjs/typeorm"
 
+import { InvitationsModule } from "@/invitations/invitations.module"
 import { MapModule } from "@/map/map.module"
 import { PassportModule } from "@/passport/passport.module"
 
@@ -24,14 +29,36 @@ import { PassportModule } from "@/passport/passport.module"
     GraphQLModule.forRoot<ApolloDriverConfig>({
       autoSchemaFile: join(process.cwd(), "src/__generated__/schema.graphql"),
       driver: ApolloDriver,
+      formatError(error) {
+        if (error.extensions?.code === "GRAPHQL_VALIDATION_FAILED") {
+          return {
+            ...error,
+            validationErrors: error.extensions?.errors,
+          }
+        }
+        return error
+      },
     }),
     PassportModule,
     MapModule,
+    InvitationsModule,
   ],
   providers: [
     {
       provide: APP_PIPE,
       useValue: new ValidationPipe({
+        exceptionFactory(errors) {
+          return new ValidationError("Invalid data", {
+            extensions: {
+              errors: Object.fromEntries(
+                errors.map((error) => [
+                  error.property,
+                  Object.values(error.constraints),
+                ])
+              ),
+            },
+          })
+        },
         forbidUnknownValues: true,
         transform: true,
         transformOptions: {

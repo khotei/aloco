@@ -38,21 +38,19 @@ export class MapResolver {
     @Auth() auth: AuthPayload,
     @Args("saveUserLocationInput") input: SaveUserLocationInput
   ): Promise<UserLocationResponse> {
-    const user = await this.userRepo.findOne({ where: { id: auth.userId } })
-    let userLocation = await this.userLocationRepo.findOne({
-      where: { user: { id: user.id } },
-    })
-    userLocation = userLocation
+    const user = await this.userRepo.findOneByOrFail({ id: auth.userId })
+    const userLocation = input.id
       ? await this.userLocationRepo.preload({
-          id: userLocation.id,
+          id: input.id,
           location: [input.location.lng, input.location.lat],
           user,
         })
-      : this.userLocationRepo.create({
-          location: [input.location.lng, input.location.lat],
-          user,
-        })
-    userLocation = await this.userLocationRepo.save(userLocation)
+      : await this.userLocationRepo.save(
+          this.userLocationRepo.create({
+            location: [input.location.lng, input.location.lat],
+            user,
+          })
+        )
     return { userLocation }
   }
 }

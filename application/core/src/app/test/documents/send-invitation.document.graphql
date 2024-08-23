@@ -1,0 +1,16 @@
+mutation SendInvitation($input: SendInvitationInput!) {
+    sendInvitation(sendInvitationInput: $input) {
+        invitation {
+            id
+            sender {
+                id
+            }
+            receiver {
+                id
+            }
+            status
+            createdAt
+            updatedAt
+        }
+    }
+}

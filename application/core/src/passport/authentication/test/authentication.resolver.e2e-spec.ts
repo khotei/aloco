@@ -1,8 +1,9 @@
-import { deepEqual, ok } from "node:assert/strict"
+import { ok, rejects } from "node:assert/strict"
 import { afterEach, beforeEach, describe, it } from "node:test"
 
 import { INestApplication } from "@nestjs/common"
 import { Test, TestingModule } from "@nestjs/testing"
+import { DataSource } from "typeorm"
 
 import { AppModule } from "@/app/app.module"
 import { apprequest } from "@/app/test/apprequest"
@@ -20,6 +21,7 @@ describe("AuthenticationResolver (e2e)", () => {
   })
 
   afterEach(async () => {
+    await app.get(DataSource).dropDatabase()
     await app.close()
   })
 
@@ -42,19 +44,22 @@ describe("AuthenticationResolver (e2e)", () => {
         authUser: { user },
       } = await apprequest({
         app,
-        headers: {
-          Authorization: `Bearer ${registerTemporalUser.token}`,
-        },
+        token: registerTemporalUser.token,
       }).AuthUser()
       ok(user.id)
     })
 
     it("should throw unauthenticated error when user is not authenticated", async () => {
-      try {
-        await apprequest({ app }).AuthUser()
-      } catch (e) {
-        deepEqual(e.response.errors[0].message, "Unauthorized")
-      }
+      await rejects(
+        async () => {
+          try {
+            await apprequest({ app }).AuthUser()
+          } catch (e) {
+            throw { message: e.response.errors.at(0).message }
+          }
+        },
+        { message: "Unauthorized" }
+      )
     })
   })
 })

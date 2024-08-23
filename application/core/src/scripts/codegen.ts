@@ -15,6 +15,7 @@ async function bootstrap() {
         "src/__generated__/scheme.generated.ts": {
           config: {
             rawRequest: false,
+            skipTypename: true,
           },
           plugins: [
             "typescript",
