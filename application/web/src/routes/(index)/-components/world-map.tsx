@@ -8,7 +8,7 @@ import {
   Pin,
   useAdvancedMarkerRef,
 } from "@vis.gl/react-google-maps"
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 
 import {
   InvitationStatus,
@@ -17,9 +17,9 @@ import {
 import { useAuthUser } from "@/hooks/use-auth-user"
 import { useSaveUserLocation } from "@/hooks/use-save-user-location"
 import { useUsersLocations } from "@/hooks/use-users-locations"
-import { useInvitations } from "@/routes/(index)/-components/invitations-provider"
 
 import { Invitation } from "./invitation"
+import { useInvitations } from "./invitations-provider"
 
 const GOOGLE_MAPS_API_KEY = "AIzaSyCUZf3em7J8q8WkWOfjJ1B9c5N1aKrDiVI"
 
@@ -68,7 +68,7 @@ export function WorldMap() {
               authUser={authData?.authUser.user}
               key={ul.id}
               location={{ lat: ul.location[0], lng: ul.location[1] }}
-              user={ul.user}
+              receiver={ul.user}
             />
           ))}
       </APIProvider>
@@ -81,33 +81,39 @@ export function WorldMap() {
     </Box>
   )
 }
+
 export function UserMarker({
   authUser,
   location,
-  user,
+  receiver,
 }: {
   authUser: UserFragmentFragment
   location: { lat: number; lng: number }
-  user: UserFragmentFragment
+  receiver: UserFragmentFragment
 }) {
-  const { sendInvitation } = useInvitations()
+  const { invitations, sendInvitation } = useInvitations()
   const [isLoading, setIsLoading] = useState(false)
+  const isInvited = useMemo(
+    () =>
+      invitations.findIndex((inv) => inv.receiver.id === receiver.id) !== -1,
+    [invitations, receiver.id]
+  )
   const handleSend = useCallback(async () => {
     try {
       setIsLoading(true)
       await sendInvitation({
-        receiverId: user.id,
+        receiverId: receiver.id,
         status: InvitationStatus.Pending,
       })
     } finally {
       setIsLoading(false)
     }
-  }, [sendInvitation, user.id])
+  }, [sendInvitation, receiver.id])
 
   const [markerRef, marker] = useAdvancedMarkerRef()
   const { isOpen, onClose, onOpen } = useDisclosure()
 
-  const currentUser = authUser.id === user.id
+  const currentUser = authUser.id === receiver.id
 
   /**
    * @todo: prevent multiple sending
@@ -128,14 +134,18 @@ export function UserMarker({
         <InfoWindow
           anchor={marker}
           onClose={onClose}>
-          <Flex direction={"column"}>
-            <Text>{currentUser ? "You" : "Other"}</Text>
+          <Flex
+            direction={"column"}
+            gap={2}>
+            <Text align={"center"}>{currentUser ? "You" : "Other"}</Text>
             {currentUser ? null : (
               <Box>
                 <Button
+                  isDisabled={isLoading || isInvited}
                   isLoading={isLoading}
-                  onClick={handleSend}>
-                  Invite
+                  onClick={handleSend}
+                  size={"sm"}>
+                  {isInvited ? "Pending..." : "Invite"}
                 </Button>
               </Box>
             )}

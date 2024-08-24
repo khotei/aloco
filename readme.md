@@ -1,4 +1,4 @@
-# coding fest 
+# 💰 manifest 
 
 prepare fest
 

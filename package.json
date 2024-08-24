@@ -1,6 +1,6 @@
 {
-  "name": "codingfest",
-  "version": "0.0.2",
+  "name": "manifest",
+  "version": "0.0.0",
   "workspaces": [
     "application/**"
   ],

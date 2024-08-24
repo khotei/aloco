@@ -14,24 +14,11 @@ import {
   type InvitationFragmentFragment,
   InvitationStatus,
 } from "@/codegen/__generated__/gql/graphql"
-import { useSendInvitation } from "@/hooks/use-send-invitation"
 
-const invitationToastStatus: Record<InvitationStatus, AlertStatus> = {
-  [InvitationStatus.Accepted]: "success",
-  [InvitationStatus.Canceled]: "info",
-  [InvitationStatus.Pending]: "loading",
-  [InvitationStatus.Rejected]: "warning",
-  [InvitationStatus.Timeout]: "error",
-}
+import { useInvitations } from "./invitations-provider"
 
-/**
- * @todo: how only active
- *
- * store could include old invitation
- * avoid of showing them
- */
 export function Invitation({
-  invitation: initial,
+  invitation,
 }: {
   invitation: InvitationFragmentFragment
 }) {
@@ -45,49 +32,46 @@ export function Invitation({
     }
   }, [toast, toastId])
 
-  const [invitation, setInvitation] =
-    useState<InvitationFragmentFragment>(initial)
   const [lastInvitation, setLastInvitation] =
-    useState<InvitationFragmentFragment>(initial)
+    useState<InvitationFragmentFragment>(invitation)
 
-  const [send, { loading }] = useSendInvitation()
+  const { removeInvitation, sendInvitation } = useInvitations()
+  const [isCanceling, setIsCanceling] = useState(false)
   const handleCancel = useCallback(async () => {
-    const { data } = await send({
-      variables: {
-        input: {
-          id: invitation.id,
-          status: InvitationStatus.Canceled,
-        },
-      },
-    })
-    const updatedInvitation = data?.sendInvitation.invitation
-    if (updatedInvitation) {
-      setInvitation(updatedInvitation)
+    try {
+      setIsCanceling(true)
+      await sendInvitation({
+        id: invitation.id,
+        status: InvitationStatus.Canceled,
+      })
+    } finally {
+      setIsCanceling(false)
     }
-  }, [invitation.id, send])
+  }, [invitation.id, sendInvitation])
+
   const handleCloseComplete = useCallback(async () => {
     if (invitation.status === InvitationStatus.Pending) {
       await handleCancel()
     }
-  }, [handleCancel, invitation.status])
+    removeInvitation(invitation)
+  }, [handleCancel, invitation, removeInvitation])
 
   const toastProps: UseToastOptions = useMemo(
     () => ({
       description: (
         <InvitationDescription
           invitation={invitation}
-          isCancelling={loading}
+          isCancelling={isCanceling}
           onCancel={handleCancel}
         />
       ),
       duration: null,
-      isClosable: true,
       onCloseComplete: handleCloseComplete,
       position: "bottom-right",
       status: invitationToastStatus[invitation.status],
       title: "Invitation.",
     }),
-    [handleCancel, handleCloseComplete, invitation, loading]
+    [handleCancel, handleCloseComplete, invitation, isCanceling]
   )
   useEffect(() => {
     if (!toastId && invitation.status === lastInvitation.status) {
@@ -106,7 +90,6 @@ export function Invitation({
     invitation.sender.id,
     invitation.status,
     lastInvitation.status,
-    loading,
     toast,
     toastId,
     toastProps,
@@ -126,7 +109,7 @@ export function Invitation({
     return () => {
       clearTimeout(timeoutId)
     }
-  }, [timeout, toast, toastId])
+  }, [invitation, removeInvitation, timeout, toast, toastId])
 
   return null
 }
@@ -198,4 +181,12 @@ export function InvitationDescription({
         </Flex>
       )
   }
+}
+
+const invitationToastStatus: Record<InvitationStatus, AlertStatus> = {
+  [InvitationStatus.Accepted]: "success",
+  [InvitationStatus.Canceled]: "info",
+  [InvitationStatus.Pending]: "loading",
+  [InvitationStatus.Rejected]: "warning",
+  [InvitationStatus.Timeout]: "error",
 }

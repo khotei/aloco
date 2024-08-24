@@ -34,23 +34,31 @@ function useInvitationsStore() {
         throw new Error("Failed")
       }
 
-      const next = Array.of(...invitations)
-      const existedIndex = invitations.findIndex(
-        (inv) => inv.id === invitation.id
-      )
-      if (existedIndex && next[existedIndex]) {
-        next[existedIndex] = invitation
-      } else {
-        next.push(invitation)
-      }
-      setInvitations(invitations)
+      setInvitations((prev) => {
+        const next = Array.of(...prev)
+        const existedIndex = prev.findIndex((inv) => inv.id === invitation.id)
+        if (existedIndex !== -1 && next[existedIndex]) {
+          next[existedIndex] = invitation
+        } else {
+          next.push(invitation)
+        }
+        return next
+      })
+
       return invitation
     },
-    [invitations, send]
+    [send]
+  )
+  const removeInvitation = useCallback(
+    (invitation: InvitationFragmentFragment) => {
+      setInvitations((prev) => prev.filter((inv) => inv.id !== invitation.id))
+    },
+    []
   )
 
   return {
     invitations,
+    removeInvitation,
     sendInvitation,
     setInvitations,
   }
