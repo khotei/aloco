@@ -1,12 +1,4 @@
-import {
-  Box,
-  Button,
-  Container,
-  Flex,
-  Text,
-  useDisclosure,
-} from "@chakra-ui/react"
-import { createLazyFileRoute } from "@tanstack/react-router"
+import { Box, Button, Flex, Text, useDisclosure } from "@chakra-ui/react"
 import { useGeolocation } from "@uidotdev/usehooks"
 import {
   AdvancedMarker,
@@ -16,9 +8,10 @@ import {
   Pin,
   useAdvancedMarkerRef,
 } from "@vis.gl/react-google-maps"
-import { useCallback, useEffect } from "react"
+import { useCallback, useEffect, useState } from "react"
 
 import {
+  type InvitationFragmentFragment,
   InvitationStatus,
   type UserFragmentFragment,
 } from "@/codegen/__generated__/gql/graphql"
@@ -27,41 +20,21 @@ import { useSaveUserLocation } from "@/hooks/use-save-user-location"
 import { useSendInvitation } from "@/hooks/use-send-invitation"
 import { useUsersLocations } from "@/hooks/use-users-locations"
 
+import { Invitation } from "./invitation"
+
 const GOOGLE_MAPS_API_KEY = "AIzaSyCUZf3em7J8q8WkWOfjJ1B9c5N1aKrDiVI"
 
-export const Route = createLazyFileRoute("/")({
-  component: () => (
-    <main>
-      <Flex as={"header"}>
-        <Container maxW={"4xl"}>
-          <Flex
-            align={"center"}
-            justify={"space-between"}
-            p={2}>
-            <Box>fuckprogramming</Box>
-            <Flex gap={3}>
-              <Button colorScheme={"yellow"}>sing up</Button>
-              <Button variant={"ghost"}>sing in</Button>
-            </Flex>
-          </Flex>
-        </Container>
-      </Flex>
-      <Box h={"calc(100vh-40px)"}>
-        <WorldMap />
-      </Box>
-    </main>
-  ),
-})
-
-function WorldMap() {
+export function WorldMap() {
   const { latitude, longitude } = useGeolocation({
     enableHighAccuracy: true,
     maximumAge: 5_000,
   })
-
   const [saveLocation] = useSaveUserLocation()
   useEffect(() => {
     if (latitude && longitude) {
+      /**
+       * @todo: re-fetch locations
+       */
       saveLocation({
         variables: {
           input: {
@@ -77,6 +50,16 @@ function WorldMap() {
 
   const { data: locationsData } = useUsersLocations({ pollInterval: 5000 })
   const { data: authData } = useAuthUser()
+
+  const [invitations, setInvitations] = useState<InvitationFragmentFragment[]>(
+    []
+  )
+  const handleInvitation = useCallback(
+    (invitation: InvitationFragmentFragment) => {
+      setInvitations((prev) => [...prev, invitation])
+    },
+    [setInvitations]
+  )
 
   return (
     <Box h={"calc(100vh - 40px)"}>
@@ -95,29 +78,34 @@ function WorldMap() {
               authUser={authData?.authUser.user}
               key={ul.id}
               location={{ lat: ul.location[0], lng: ul.location[1] }}
+              onInvitation={handleInvitation}
               user={ul.user}
             />
           ))}
       </APIProvider>
+      {invitations.map((inv) => (
+        <Invitation
+          invitation={inv}
+          key={inv.id}
+        />
+      ))}
     </Box>
   )
 }
-
 export function UserMarker({
   authUser,
   location,
+  onInvitation,
   user,
 }: {
   authUser: UserFragmentFragment
   location: { lat: number; lng: number }
+  onInvitation: (invitation: InvitationFragmentFragment) => void
   user: UserFragmentFragment
 }) {
-  const [markerRef, marker] = useAdvancedMarkerRef()
-  const { isOpen, onClose, onOpen } = useDisclosure()
-
   const [send, { loading }] = useSendInvitation()
-  const handleSendClick = useCallback(() => {
-    send({
+  const handleSend = useCallback(async () => {
+    const { data } = await send({
       variables: {
         input: {
           receiverId: user.id,
@@ -125,9 +113,26 @@ export function UserMarker({
         },
       },
     })
-  }, [user])
+    const invitation = data?.sendInvitation.invitation
+    if (invitation) {
+      onInvitation(invitation)
+    }
+  }, [onInvitation, send, user.id])
+
+  const [markerRef, marker] = useAdvancedMarkerRef()
+  const { isOpen, onClose, onOpen } = useDisclosure()
 
   const currentUser = authUser.id === user.id
+
+  /**
+   * @todo: prevent multiple sending
+   *
+   * some how you should track updates of invitation.
+   *
+   * get invitation from initial render. active invitation. delete after timeout.
+   * get invitation from subscription(updates). delete on cancel, reject.
+   * prevent if there active invitation.
+   */
 
   return (
     <AdvancedMarker
@@ -144,7 +149,7 @@ export function UserMarker({
               <Box>
                 <Button
                   isLoading={loading}
-                  onClick={handleSendClick}>
+                  onClick={handleSend}>
                   Invite
                 </Button>
               </Box>
