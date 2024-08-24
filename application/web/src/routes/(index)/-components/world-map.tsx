@@ -25,16 +25,16 @@ import { Invitation } from "./invitation"
 const GOOGLE_MAPS_API_KEY = "AIzaSyCUZf3em7J8q8WkWOfjJ1B9c5N1aKrDiVI"
 
 export function WorldMap() {
+  const { data: locationsData, refetch } = useUsersLocations({
+    pollInterval: 5000,
+  })
   const { latitude, longitude } = useGeolocation({
     enableHighAccuracy: true,
     maximumAge: 5_000,
   })
-  const [saveLocation] = useSaveUserLocation()
+  const [saveLocation] = useSaveUserLocation({ onCompleted: () => refetch() })
   useEffect(() => {
     if (latitude && longitude) {
-      /**
-       * @todo: re-fetch locations
-       */
       saveLocation({
         variables: {
           input: {
@@ -48,9 +48,6 @@ export function WorldMap() {
     }
   }, [saveLocation, latitude, longitude])
 
-  const { data: locationsData } = useUsersLocations({ pollInterval: 5000 })
-  const { data: authData } = useAuthUser()
-
   const [invitations, setInvitations] = useState<InvitationFragmentFragment[]>(
     []
   )
@@ -60,6 +57,8 @@ export function WorldMap() {
     },
     [setInvitations]
   )
+
+  const { data: authData } = useAuthUser()
 
   return (
     <Box h={"calc(100vh - 40px)"}>

@@ -106,6 +106,10 @@ export function Invitation({
     toastProps,
   ])
 
+  /**
+   * @todo: imp. timout on BE and emit it.
+   * track this status and show notification.
+   */
   const timeout = invitation.status === InvitationStatus.Pending ? 10000 : 4000
   useEffect(() => {
     const timeoutId = setTimeout(() => {
