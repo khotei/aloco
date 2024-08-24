@@ -1,6 +1,7 @@
 import { UseGuards } from "@nestjs/common"
-import { Args, Mutation, Resolver } from "@nestjs/graphql"
+import { Args, Mutation, Resolver, Subscription } from "@nestjs/graphql"
 import { InjectRepository } from "@nestjs/typeorm"
+import { PubSub } from "graphql-subscriptions"
 import type { Repository } from "typeorm"
 
 import { InvitationResponse } from "@/invitations/dto/invitation-response.dto"
@@ -15,12 +16,29 @@ import { User } from "@/users/entities/user.entity"
 
 @Resolver()
 export class InvitationsResolver {
+  pubSub = new PubSub()
+
   constructor(
     @InjectRepository(Invitation)
     private readonly invitationsRepo: Repository<Invitation>,
     @InjectRepository(User)
     private usersRepo: Repository<User>
   ) {}
+  @UseGuards(JwtAuthGuard)
+  @Subscription(() => InvitationResponse, {
+    filter(invitationRes: InvitationResponse, _: any, context: any) {
+      console.log(context)
+      return [
+        invitationRes.invitation.receiver.id,
+        invitationRes.invitation.sender.id,
+      ].includes(context.req.user.id)
+    },
+    name: "invitationSent",
+  })
+  emitInvitation() {
+    return this.pubSub.asyncIterator("invitationSent")
+  }
+
   @UseGuards(JwtAuthGuard)
   @Mutation(() => InvitationResponse, { name: "sendInvitation" })
   async save(
@@ -44,6 +62,10 @@ export class InvitationsResolver {
       await this.invitationsRepo.save(
         this.invitationsRepo.merge(invitation, input)
       )
+      /**
+       * @todo: move to interceptor
+       */
+      await this.pubSub.publish("invitation", { invitation })
       return { invitation }
     } else {
       const receiver = await this.usersRepo.findOneByOrFail({
@@ -56,6 +78,10 @@ export class InvitationsResolver {
           status: input.status,
         })
       )
+      /**
+       * @todo: move to interceptor
+       */
+      await this.pubSub.publish("invitationSent", { invitation })
       return { invitation }
     }
   }

@@ -38,6 +38,9 @@ import { PassportModule } from "@/passport/passport.module"
         }
         return error
       },
+      subscriptions: {
+        "graphql-ws": true,
+      },
     }),
     PassportModule,
     MapModule,
