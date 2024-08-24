@@ -24,6 +24,12 @@ const invitationToastStatus: Record<InvitationStatus, AlertStatus> = {
   [InvitationStatus.Timeout]: "error",
 }
 
+/**
+ * @todo: how only active
+ *
+ * store could include old invitation
+ * avoid of showing them
+ */
 export function Invitation({
   invitation: initial,
 }: {

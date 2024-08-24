@@ -11,14 +11,13 @@ import {
 import { useCallback, useEffect, useState } from "react"
 
 import {
-  type InvitationFragmentFragment,
   InvitationStatus,
   type UserFragmentFragment,
 } from "@/codegen/__generated__/gql/graphql"
 import { useAuthUser } from "@/hooks/use-auth-user"
 import { useSaveUserLocation } from "@/hooks/use-save-user-location"
-import { useSendInvitation } from "@/hooks/use-send-invitation"
 import { useUsersLocations } from "@/hooks/use-users-locations"
+import { useInvitations } from "@/routes/(index)/-components/invitations-provider"
 
 import { Invitation } from "./invitation"
 
@@ -48,15 +47,7 @@ export function WorldMap() {
     }
   }, [saveLocation, latitude, longitude])
 
-  const [invitations, setInvitations] = useState<InvitationFragmentFragment[]>(
-    []
-  )
-  const handleInvitation = useCallback(
-    (invitation: InvitationFragmentFragment) => {
-      setInvitations((prev) => [...prev, invitation])
-    },
-    [setInvitations]
-  )
+  const { invitations } = useInvitations()
 
   const { data: authData } = useAuthUser()
 
@@ -77,7 +68,6 @@ export function WorldMap() {
               authUser={authData?.authUser.user}
               key={ul.id}
               location={{ lat: ul.location[0], lng: ul.location[1] }}
-              onInvitation={handleInvitation}
               user={ul.user}
             />
           ))}
@@ -94,29 +84,25 @@ export function WorldMap() {
 export function UserMarker({
   authUser,
   location,
-  onInvitation,
   user,
 }: {
   authUser: UserFragmentFragment
   location: { lat: number; lng: number }
-  onInvitation: (invitation: InvitationFragmentFragment) => void
   user: UserFragmentFragment
 }) {
-  const [send, { loading }] = useSendInvitation()
+  const { sendInvitation } = useInvitations()
+  const [isLoading, setIsLoading] = useState(false)
   const handleSend = useCallback(async () => {
-    const { data } = await send({
-      variables: {
-        input: {
-          receiverId: user.id,
-          status: InvitationStatus.Pending,
-        },
-      },
-    })
-    const invitation = data?.sendInvitation.invitation
-    if (invitation) {
-      onInvitation(invitation)
+    try {
+      setIsLoading(true)
+      await sendInvitation({
+        receiverId: user.id,
+        status: InvitationStatus.Pending,
+      })
+    } finally {
+      setIsLoading(false)
     }
-  }, [onInvitation, send, user.id])
+  }, [sendInvitation, user.id])
 
   const [markerRef, marker] = useAdvancedMarkerRef()
   const { isOpen, onClose, onOpen } = useDisclosure()
@@ -147,7 +133,7 @@ export function UserMarker({
             {currentUser ? null : (
               <Box>
                 <Button
-                  isLoading={loading}
+                  isLoading={isLoading}
                   onClick={handleSend}>
                   Invite
                 </Button>

@@ -1,7 +1,8 @@
 import { Box, Button, Container, Flex } from "@chakra-ui/react"
 import { createLazyFileRoute } from "@tanstack/react-router"
 
-import { WorldMap } from "@/routes/(index)/-components/world-map"
+import { InvitationsProvider } from "./-components/invitations-provider"
+import { WorldMap } from "./-components/world-map"
 
 export const Route = createLazyFileRoute("/(index)/")({
   component: () => (
@@ -21,7 +22,9 @@ export const Route = createLazyFileRoute("/(index)/")({
         </Container>
       </Flex>
       <Box h={"calc(100vh-40px)"}>
-        <WorldMap />
+        <InvitationsProvider>
+          <WorldMap />
+        </InvitationsProvider>
       </Box>
     </main>
   ),
