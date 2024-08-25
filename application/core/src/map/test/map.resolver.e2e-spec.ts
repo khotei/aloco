@@ -28,7 +28,7 @@ const fakeLocation = [
 
 describe("MapResolver (e2e)", () => {
   let app: INestApplication
-  const auths: Partial<{ token: string; user: Partial<User> }>[] = []
+  const auth: Partial<{ token: string; user: Partial<User> }>[] = []
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -38,8 +38,7 @@ describe("MapResolver (e2e)", () => {
     await app.init()
     await app.listen(0)
 
-    const auth = await testSignUp({ app })
-    auths.push(auth)
+    auth.push(await testSignUp({ app }))
   })
 
   afterEach(async () => {
@@ -47,46 +46,44 @@ describe("MapResolver (e2e)", () => {
     await app.close()
   })
 
-  describe("saveUserLocation", () => {
-    it("should create and return a user location", async () => {
-      const [location] = fakeLocation
-      const {
-        saveUserLocation: { userLocation: created },
-      } = await apprequest({
-        app,
-        token: auths.at(0).token,
-      }).SaveUserLocation({ input: { location } })
-      const { id, ...rest } = created
-      ok(id)
-      deepEqual(rest, {
-        location: [location.lat, location.lng],
-        user: auths.at(0).user,
-      })
+  it("should create and return a user location", async () => {
+    const [location] = fakeLocation
+    const {
+      saveUserLocation: { userLocation: created },
+    } = await apprequest({
+      app,
+      token: auth.at(0).token,
+    }).SaveUserLocation({ input: { location } })
+    const { id, ...rest } = created
+    ok(id)
+    deepEqual(rest, {
+      location: [location.lat, location.lng],
+      user: auth.at(0).user,
     })
+  })
 
-    it("should update and return a user existed location", async () => {
-      const [location, updatedLocation] = fakeLocation
-      const {
-        saveUserLocation: { userLocation: created },
-      } = await apprequest({
-        app,
-        token: auths.at(0).token,
-      }).SaveUserLocation({ input: { location } })
-      const {
-        saveUserLocation: { userLocation: updated },
-      } = await apprequest({
-        app,
-        token: auths.at(0).token,
-      }).SaveUserLocation({
-        input: {
-          location: updatedLocation,
-        },
-      })
-      deepEqual(updated, {
-        id: created.id,
-        location: [updatedLocation.lat, updatedLocation.lng],
-        user: auths.at(0).user,
-      })
+  it("should update and return a user existed location", async () => {
+    const [location, updatedLocation] = fakeLocation
+    const {
+      saveUserLocation: { userLocation: created },
+    } = await apprequest({
+      app,
+      token: auth.at(0).token,
+    }).SaveUserLocation({ input: { location } })
+    const {
+      saveUserLocation: { userLocation: updated },
+    } = await apprequest({
+      app,
+      token: auth.at(0).token,
+    }).SaveUserLocation({
+      input: {
+        location: updatedLocation,
+      },
+    })
+    deepEqual(updated, {
+      id: created.id,
+      location: [updatedLocation.lat, updatedLocation.lng],
+      user: auth.at(0).user,
     })
   })
 })

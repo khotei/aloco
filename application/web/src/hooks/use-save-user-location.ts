@@ -1,7 +1,9 @@
 import { useMutation } from "@apollo/client"
-import type { SaveUserLocationMutation } from "core/dist/__generated__/scheme.generated"
 
-import { SaveUserLocationDocument } from "@/codegen/__generated__/gql/graphql"
+import {
+  SaveUserLocationDocument,
+  type SaveUserLocationMutation,
+} from "@/codegen/__generated__/gql/graphql"
 
 export const useSaveUserLocation = ({
   onCompleted,

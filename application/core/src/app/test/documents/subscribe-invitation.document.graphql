@@ -1,0 +1,17 @@
+subscription InvitationSent {
+    invitationSent {
+        invitation {
+            id
+            sender {
+                id
+            }
+            receiver {
+                id
+            }
+            status
+            createdAt
+            updatedAt
+        }
+
+    }
+}

@@ -13,7 +13,20 @@ export interface JwtPayload {
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor() {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      /**
+       * @todo: maybe there a way to split strategies
+       * and use different with guard
+       */
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        (req) => {
+          const isSub = Boolean(req.subscriptions)
+          if (isSub) {
+            return req.connectionParams?.Authorization.split(" ").at(1)
+          } else {
+            return req.headers?.authorization?.split(" ").at(1)
+          }
+        },
+      ]),
       secretOrKey: "secret",
     })
   }

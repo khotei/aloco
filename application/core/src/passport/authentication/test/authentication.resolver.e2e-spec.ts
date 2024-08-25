@@ -25,41 +25,37 @@ describe("AuthenticationResolver (e2e)", () => {
     await app.close()
   })
 
-  describe("registerTemporalUser", () => {
-    it("should create a user and return token", async () => {
-      const { registerTemporalUser } = await apprequest({
-        app,
-      }).RegisterTemporalUser()
-      ok(registerTemporalUser.token)
-    })
+  it("should create a user and return token", async () => {
+    const { registerTemporalUser } = await apprequest({
+      app,
+    }).RegisterTemporalUser()
+    ok(registerTemporalUser.token)
   })
 
-  describe("authUser", () => {
-    it("should return authenticated user", async () => {
-      const { registerTemporalUser } = await apprequest({
-        app,
-      }).RegisterTemporalUser()
-      ok(registerTemporalUser.token)
-      const {
-        authUser: { user },
-      } = await apprequest({
-        app,
-        token: registerTemporalUser.token,
-      }).AuthUser()
-      ok(user.id)
-    })
+  it("should return authenticated user", async () => {
+    const { registerTemporalUser } = await apprequest({
+      app,
+    }).RegisterTemporalUser()
+    ok(registerTemporalUser.token)
+    const {
+      authUser: { user },
+    } = await apprequest({
+      app,
+      token: registerTemporalUser.token,
+    }).AuthUser()
+    ok(user.id)
+  })
 
-    it("should throw unauthenticated error when user is not authenticated", async () => {
-      await rejects(
-        async () => {
-          try {
-            await apprequest({ app }).AuthUser()
-          } catch (e) {
-            throw { message: e.response.errors.at(0).message }
-          }
-        },
-        { message: "Unauthorized" }
-      )
-    })
+  it("should throw unauthenticated error when user is not authenticated", async () => {
+    await rejects(
+      async () => {
+        try {
+          await apprequest({ app }).AuthUser()
+        } catch (e) {
+          throw { message: e.response.errors.at(0).message }
+        }
+      },
+      { message: "Unauthorized" }
+    )
   })
 })

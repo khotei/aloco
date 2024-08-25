@@ -27,15 +27,19 @@ export class InvitationsResolver {
   @UseGuards(JwtAuthGuard)
   @Subscription(() => InvitationResponse, {
     filter(invitationRes: InvitationResponse, _: any, context: any) {
-      console.log(context)
+      console.log("filter", invitationRes)
       return [
         invitationRes.invitation.receiver.id,
         invitationRes.invitation.sender.id,
-      ].includes(context.req.user.id)
+      ].includes(context.req.user.userId)
     },
     name: "invitationSent",
   })
-  emitInvitation() {
+  async emitInvitation() {
+    console.log(
+      "emit",
+      await this.pubSub.asyncIterator("invitationSent").next()
+    )
     return this.pubSub.asyncIterator("invitationSent")
   }
 
@@ -82,6 +86,7 @@ export class InvitationsResolver {
        * @todo: move to interceptor
        */
       await this.pubSub.publish("invitationSent", { invitation })
+      console.log("published", { invitation })
       return { invitation }
     }
   }

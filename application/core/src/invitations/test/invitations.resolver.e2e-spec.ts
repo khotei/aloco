@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, it } from "node:test"
 import { INestApplication } from "@nestjs/common"
 import { Test, TestingModule } from "@nestjs/testing"
 import { notEquals } from "class-validator"
+import { createClient } from "graphql-ws"
 import { DataSource } from "typeorm"
 
 import {
@@ -23,7 +24,6 @@ describe("InvitationsResolver (e2e)", () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile()
-
     app = moduleFixture.createNestApplication()
     await app.init()
     await app.listen(0)
@@ -169,5 +169,118 @@ describe("InvitationsResolver (e2e)", () => {
         }
       }
     )
+  })
+
+  it("should emit invitation when user", async () => {
+    const authSender = auth.at(0)
+    const url = `http://127.0.0.1:${app.getHttpServer().address().port}/graphql`
+    const client = createClient({
+      connectionParams: {
+        Authorization: `Bearer ${authSender.token}`,
+      },
+      url,
+    })
+
+    const invitationSentPromise = new Promise<any>((resolve, reject) => {
+      client.subscribe(
+        {
+          query: `
+          subscription InvitationSent {
+  invitationSent {
+    invitation {
+      id
+      sender {
+        id
+      }
+      receiver {
+        id
+      }
+      status
+      createdAt
+      updatedAt
+    }
+  }
+}`,
+        },
+        {
+          complete: () => {
+            console.log("complete")
+          },
+          error: reject,
+          next: resolve,
+        }
+      )
+      console.log("subscribed")
+    })
+
+    const authReceiver = auth.at(1)
+    const createInput = {
+      receiverId: authReceiver.user.id,
+      status: InvitationStatus.Pending,
+    }
+    const {
+      sendInvitation: { invitation },
+    } = await apprequest({
+      app,
+      token: authSender.token,
+    }).SendInvitation({
+      input: createInput,
+    })
+
+    console.log("send-test", invitation)
+    console.log("promise", await invitationSentPromise)
+  })
+
+  it("should emit invitation when user sender", async () => {
+    const authSender = auth.at(0)
+    const url = `http://127.0.0.1:${app.getHttpServer().address().port}/graphql`
+    const client = createClient({
+      connectionParams: {
+        Authorization: `Bearer ${authSender.token}`,
+      },
+      url,
+    })
+    const authReceiver = auth.at(1)
+    const createInput = {
+      receiverId: authReceiver.user.id,
+      status: InvitationStatus.Pending,
+    }
+
+    const value: any = await new Promise((resolve, reject) => {
+      const sub = client.iterate({
+        query: `
+          subscription InvitationSent {
+  invitationSent {
+    invitation {
+      id
+      sender {
+        id
+      }
+      receiver {
+        id
+      }
+      status
+      createdAt
+      updatedAt
+    }
+  }
+}`,
+      })
+
+      apprequest({
+        app,
+        token: authSender.token,
+      }).SendInvitation({
+        input: createInput,
+      })
+      sub
+        .next()
+        .then((value) => {
+          resolve(value)
+        })
+        .catch(reject)
+    })
+
+    console.log(value.value.errors)
   })
 })
