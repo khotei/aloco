@@ -14,8 +14,7 @@ import {
   type InvitationFragmentFragment,
   InvitationStatus,
 } from "@/codegen/__generated__/gql/graphql"
-
-import { useInvitations } from "./invitations-provider"
+import { useInvitations } from "@/components/invitations-provider"
 
 export function Invitation({
   invitation,

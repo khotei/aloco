@@ -1,10 +1,10 @@
 import { Box, Button, Container, Flex } from "@chakra-ui/react"
 import { createLazyFileRoute } from "@tanstack/react-router"
 
-import { InvitationsProvider } from "./-components/invitations-provider"
-import { WorldMap } from "./-components/world-map"
+import { InvitationsProvider } from "@/components/invitations-provider"
+import { WorldMap } from "@/components/world-map"
 
-export const Route = createLazyFileRoute("/(index)/")({
+export const Route = createLazyFileRoute("/")({
   component: () => (
     <main>
       <Flex as={"header"}>

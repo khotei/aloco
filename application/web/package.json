@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "scripts": {
     "codegen": "ts-node src/codegen/codegen.ts",
-    "dev": "vite",
+    "dev": "vite --host",
     "build": "vite build",
     "tscheck": "tsc -p tsconfig.app.json",
     "lint": "eslint --fix",

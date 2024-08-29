@@ -14,13 +14,13 @@ import {
   InvitationStatus,
   type UserFragmentFragment,
 } from "@/codegen/__generated__/gql/graphql"
+import { useInvitations } from "@/components/invitations-provider"
 import { useAuthUser } from "@/hooks/use-auth-user"
 import { useInvitationSub } from "@/hooks/use-invitation-sub"
 import { useSaveUserLocation } from "@/hooks/use-save-user-location"
 import { useUsersLocations } from "@/hooks/use-users-locations"
 
 import { Invitation } from "./invitation"
-import { useInvitations } from "./invitations-provider"
 
 const GOOGLE_MAPS_API_KEY = "AIzaSyCUZf3em7J8q8WkWOfjJ1B9c5N1aKrDiVI"
 

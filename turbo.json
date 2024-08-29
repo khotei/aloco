@@ -10,6 +10,8 @@
       "dependsOn": ["core#codegen"]
     },
     "dev": {
+      "persistent": true,
+      "cache": false,
       "dependsOn": ["codegen"]
     }
   }
