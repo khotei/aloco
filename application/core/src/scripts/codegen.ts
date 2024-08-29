@@ -1,13 +1,12 @@
 import { generate } from "@graphql-codegen/cli"
 import { NestFactory } from "@nestjs/core"
 
-import { AppModule } from "@/app/app.module"
+import { AppModule } from "@/app.module"
 
 async function bootstrap() {
   // @todo: avoid connecting typeorm to pg
   const app = await NestFactory.create(AppModule)
   await app.init()
-
   await generate(
     {
       documents: "src/**/*.document.graphql",
