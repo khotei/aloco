@@ -22,12 +22,11 @@ export class AuthenticationResolver {
   @Mutation(() => TokenResponse, { name: "registerTemporalUser" })
   async createTemporalUser(): Promise<TokenResponse> {
     const user = await this.usersRepo.save(this.usersRepo.create())
-    const token = await this.jwtService.signAsync(
-      { sub: user.id } as JwtPayload,
-      {
-        secret: "secret",
-      }
-    )
+
+    const jwtPayload: JwtPayload = { sub: user.id }
+    const token = await this.jwtService.signAsync(jwtPayload, {
+      secret: "secret",
+    })
     return { token }
   }
 

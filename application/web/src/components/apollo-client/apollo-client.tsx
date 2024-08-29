@@ -1,4 +1,13 @@
-import { ApolloClient, ApolloProvider, InMemoryCache } from "@apollo/client"
+import {
+  ApolloClient,
+  ApolloProvider,
+  HttpLink,
+  InMemoryCache,
+  split,
+} from "@apollo/client"
+import { GraphQLWsLink } from "@apollo/client/link/subscriptions"
+import { getMainDefinition } from "@apollo/client/utilities"
+import { createClient } from "graphql-ws"
 import { type ReactNode, useMemo } from "react"
 
 export function ApolloClientProvider({
@@ -8,18 +17,50 @@ export function ApolloClientProvider({
   children: ReactNode
   token: null | string | undefined
 }) {
-  const client = useMemo(
+  const httpLink = useMemo(
     () =>
-      new ApolloClient({
-        cache: new InMemoryCache(),
-        defaultContext: {
-          headers: {
-            ...(token ? { Authorization: `Bearer ${token}` } : undefined),
-          },
+      new HttpLink({
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : undefined),
         },
         uri: "http://localhost:4000/graphql",
       }),
     [token]
+  )
+  const wsLink = useMemo(
+    () =>
+      new GraphQLWsLink(
+        createClient({
+          connectionParams: {
+            ...(token ? { Authorization: `Bearer ${token}` } : undefined),
+          },
+          url: "ws://localhost:4000/graphql",
+        })
+      ),
+    [token]
+  )
+  const splitLink = useMemo(
+    () =>
+      split(
+        ({ query }) => {
+          const definition = getMainDefinition(query)
+          return (
+            definition.kind === "OperationDefinition" &&
+            definition.operation === "subscription"
+          )
+        },
+        wsLink,
+        httpLink
+      ),
+    [httpLink, wsLink]
+  )
+  const client = useMemo(
+    () =>
+      new ApolloClient({
+        cache: new InMemoryCache(),
+        link: splitLink,
+      }),
+    [splitLink]
   )
 
   return <ApolloProvider client={client}>{children}</ApolloProvider>

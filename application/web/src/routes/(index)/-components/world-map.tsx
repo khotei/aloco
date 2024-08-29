@@ -15,6 +15,7 @@ import {
   type UserFragmentFragment,
 } from "@/codegen/__generated__/gql/graphql"
 import { useAuthUser } from "@/hooks/use-auth-user"
+import { useInvitationSub } from "@/hooks/use-invitation-sub"
 import { useSaveUserLocation } from "@/hooks/use-save-user-location"
 import { useUsersLocations } from "@/hooks/use-users-locations"
 
@@ -48,6 +49,7 @@ export function WorldMap() {
   }, [saveLocation, latitude, longitude])
 
   const { invitations } = useInvitations()
+  useInvitationSub()
 
   const { data: authData } = useAuthUser()
 

@@ -1,10 +1,10 @@
 import { join } from "node:path"
 
-import { generate as gengql } from "@graphql-codegen/cli"
-import { generator as genrouter } from "@tanstack/router-generator"
+import { generate as genGql } from "@graphql-codegen/cli"
+import { generator as genRouter } from "@tanstack/router-generator"
 
 Promise.all([
-  gengql(
+  genGql(
     {
       documents: join(__dirname, "./documents/**/*.graphql"),
       generates: {
@@ -22,7 +22,7 @@ Promise.all([
     },
     true
   ),
-  genrouter({
+  genRouter({
     addExtensions: false,
     disableLogging: false,
     disableManifestGeneration: false,

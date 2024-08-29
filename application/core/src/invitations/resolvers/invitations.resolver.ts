@@ -26,6 +26,9 @@ export class InvitationsResolver {
   ) {}
   @UseGuards(JwtAuthGuard)
   @Subscription(() => InvitationResponse, {
+    /**
+     * @todo: improve type-safe
+     */
     filter(invitationRes: InvitationResponse, _: any, context: any) {
       console.log("filter", invitationRes)
       return [
@@ -34,13 +37,18 @@ export class InvitationsResolver {
       ].includes(context.req.user.userId)
     },
     name: "invitationSent",
+    /**
+     * @todo: why emitInvitation return null without resolver
+     *
+     * asyncIterator return wrong value
+     * maybe it returns {value: {...}} instead {...}
+     */
+    resolve(value) {
+      return value
+    },
   })
   async emitInvitation() {
-    console.log(
-      "emit",
-      await this.pubSub.asyncIterator("invitationSent").next()
-    )
-    return this.pubSub.asyncIterator("invitationSent")
+    return this.pubSub.asyncIterator<InvitationResponse>("invitationSent")
   }
 
   @UseGuards(JwtAuthGuard)
@@ -86,7 +94,6 @@ export class InvitationsResolver {
        * @todo: move to interceptor
        */
       await this.pubSub.publish("invitationSent", { invitation })
-      console.log("published", { invitation })
       return { invitation }
     }
   }
