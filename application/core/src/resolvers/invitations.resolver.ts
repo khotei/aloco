@@ -30,7 +30,6 @@ export class InvitationsResolver {
      * @todo: improve type-safe
      */
     filter(invitationRes: InvitationResponse, _: any, context: any) {
-      console.log("filter", invitationRes)
       return [
         invitationRes.invitation.receiver.id,
         invitationRes.invitation.sender.id,
@@ -77,7 +76,10 @@ export class InvitationsResolver {
       /**
        * @todo: move to interceptor
        */
-      await this.pubSub.publish("invitation", { invitation })
+      /**
+       * @todo: schedule timeout
+       */
+      await this.pubSub.publish("invitationSent", { invitation })
       return { invitation }
     } else {
       const receiver = await this.usersRepo.findOneByOrFail({
@@ -92,6 +94,9 @@ export class InvitationsResolver {
       )
       /**
        * @todo: move to interceptor
+       */
+      /**
+       * @todo: schedule timeout
        */
       await this.pubSub.publish("invitationSent", { invitation })
       return { invitation }

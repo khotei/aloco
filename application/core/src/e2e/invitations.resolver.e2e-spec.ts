@@ -289,6 +289,84 @@ describe("InvitationsResolver (e2e)", () => {
     await sub.return()
   })
 
+  it("should emit accepted invitation for sender when receiver accept", async () => {
+    const authReceiver = auth.at(1)
+    const url = `http://127.0.0.1:${app.getHttpServer().address().port}/graphql`
+    const client = createClient({
+      connectionParams: {
+        Authorization: `Bearer ${authReceiver.token}`,
+      },
+      url,
+    })
+    /**
+     * @todo: improve type-safe
+     */
+    const sub = client.iterate({
+      query: `
+          subscription InvitationSent {
+  invitationSent {
+    invitation {
+      id
+      sender {
+        id
+      }
+      receiver {
+        id
+      }
+      status
+      createdAt
+      updatedAt
+    }
+  }
+}`,
+    })
+
+    const authSender = auth.at(0)
+    const createInput = {
+      receiverId: authReceiver.user.id,
+      status: InvitationStatus.Pending,
+    }
+    const {
+      sendInvitation: { invitation: created },
+    } = await apprequest({
+      app,
+      token: authSender.token,
+    }).SendInvitation({
+      input: createInput,
+    })
+    const {
+      value: {
+        data: {
+          invitationSent: { invitation: createdEmitted },
+        },
+      },
+    } = await sub.next()
+    console.log("createdEmitted", createdEmitted)
+    deepEqual(createdEmitted, created)
+
+    const acceptInput = {
+      id: created.id,
+      status: InvitationStatus.Accepted,
+    }
+    const {
+      sendInvitation: { invitation: accepted },
+    } = await apprequest({
+      app,
+      token: authReceiver.token,
+    }).SendInvitation({
+      input: acceptInput,
+    })
+    const {
+      value: {
+        data: {
+          invitationSent: { invitation: acceptedEmmitted },
+        },
+      },
+    } = await sub.next()
+    deepEqual(acceptedEmmitted, accepted)
+    await sub.return()
+  })
+
   it("should not emit invitation when listener is not receiver or sender", async () => {
     const authListener = auth.at(3)
     const url = `http://127.0.0.1:${app.getHttpServer().address().port}/graphql`

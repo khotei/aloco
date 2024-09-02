@@ -1,9 +1,16 @@
-import { useSubscription } from "@apollo/client"
+import { type SubscriptionResult, useSubscription } from "@apollo/client"
 
-import { InvitationSentDocument } from "@/codegen/__generated__/gql/graphql"
+import {
+  InvitationSentDocument,
+  InvitationSentSubscription,
+} from "@/codegen/__generated__/gql/graphql"
 
-export const useInvitationSub = () => {
+export const useInvitationSub = ({
+  onData,
+}: {
+  onData?: (data: SubscriptionResult<InvitationSentSubscription, any>) => void
+} = {}) => {
   return useSubscription(InvitationSentDocument, {
-    onData: console.log,
+    onData: ({ data }) => onData?.(data),
   })
 }

@@ -8,7 +8,13 @@ import { AuthInitializer } from "@/components/auth-initializer"
 import { TokenProvider } from "@/components/token"
 
 export function App() {
-  const token = useMemo(() => window.localStorage.getItem("token"), [])
+  const token = useMemo(() => {
+    const tokenInStorage = window.localStorage.getItem("token")
+    if (tokenInStorage) {
+      return JSON.stringify(tokenInStorage)
+    }
+    return null
+  }, [])
   const router = useMemo(() => createRouter({ routeTree }), [])
 
   return (

@@ -20,6 +20,27 @@ function useInvitationsStore() {
   const [invitations, setInvitations] = useState<InvitationFragmentFragment[]>(
     []
   )
+  const removeInvitation = useCallback(
+    (invitation: InvitationFragmentFragment) => {
+      setInvitations((prev) => prev.filter((inv) => inv.id !== invitation.id))
+    },
+    []
+  )
+  const addInvitation = useCallback(
+    (invitation: InvitationFragmentFragment) => {
+      setInvitations((prev) => {
+        const next = Array.of(...prev)
+        const existedIndex = prev.findIndex((inv) => inv.id === invitation.id)
+        if (existedIndex !== -1 && next[existedIndex]) {
+          next[existedIndex] = invitation
+        } else {
+          next.push(invitation)
+        }
+        return next
+      })
+    },
+    []
+  )
 
   const [send] = useSendInvitation()
   const sendInvitation = useCallback(
@@ -33,30 +54,14 @@ function useInvitationsStore() {
       if (!invitation) {
         throw new Error("Failed")
       }
-
-      setInvitations((prev) => {
-        const next = Array.of(...prev)
-        const existedIndex = prev.findIndex((inv) => inv.id === invitation.id)
-        if (existedIndex !== -1 && next[existedIndex]) {
-          next[existedIndex] = invitation
-        } else {
-          next.push(invitation)
-        }
-        return next
-      })
-
+      addInvitation(invitation)
       return invitation
     },
-    [send]
-  )
-  const removeInvitation = useCallback(
-    (invitation: InvitationFragmentFragment) => {
-      setInvitations((prev) => prev.filter((inv) => inv.id !== invitation.id))
-    },
-    []
+    [addInvitation, send]
   )
 
   return {
+    addInvitation,
     invitations,
     removeInvitation,
     sendInvitation,

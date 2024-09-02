@@ -3,6 +3,7 @@ import { useGeolocation } from "@uidotdev/usehooks"
 import {
   AdvancedMarker,
   APIProvider,
+  CollisionBehavior,
   InfoWindow,
   Map,
   Pin,
@@ -32,6 +33,9 @@ export function WorldMap() {
     enableHighAccuracy: true,
     maximumAge: 5_000,
   })
+  /**
+   * @todo: refresh only once, when prev not exists but current exists
+   */
   const [saveLocation] = useSaveUserLocation({ onCompleted: () => refetch() })
   useEffect(() => {
     if (latitude && longitude) {
@@ -48,8 +52,17 @@ export function WorldMap() {
     }
   }, [saveLocation, latitude, longitude])
 
-  const { invitations } = useInvitations()
-  useInvitationSub()
+  /**
+   * @todo: move to Invitations component
+   */
+  const { addInvitation, invitations } = useInvitations()
+  useInvitationSub({
+    onData: ({ data }) => {
+      if (data) {
+        addInvitation(data.invitationSent.invitation)
+      }
+    },
+  })
 
   const { data: authData } = useAuthUser()
 
@@ -129,6 +142,7 @@ export function UserMarker({
 
   return (
     <AdvancedMarker
+      collisionBehavior={CollisionBehavior.REQUIRED_AND_HIDES_OPTIONAL}
       onClick={onOpen}
       position={location}
       ref={markerRef}>
