@@ -136,6 +136,7 @@ export function InvitationDescription({
             direction={"column"}
             gap={2}>
             <Text>You accepted invitation {invitation.id}</Text>
+            <Text>You will redirected to the room..</Text>
           </Flex>
         )
       } else {
@@ -144,8 +145,9 @@ export function InvitationDescription({
             direction={"column"}
             gap={2}>
             <Text>
-              User {invitation.receiver.id} accepted invitation {invitation.id}
+              User {invitation.receiver.id} accepted invitation {invitation.id}.
             </Text>
+            <Text>You will redirected to the room..</Text>
           </Flex>
         )
       }

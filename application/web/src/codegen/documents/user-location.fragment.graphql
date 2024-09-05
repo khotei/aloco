@@ -3,5 +3,8 @@ fragment UserLocationFragment on UserLocation {
     user {
         ...UserFragment
     }
-    location
+    location {
+        lat
+        lng
+    }
 }

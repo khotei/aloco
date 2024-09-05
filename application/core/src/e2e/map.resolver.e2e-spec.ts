@@ -57,7 +57,7 @@ describe("MapResolver (e2e)", () => {
     const { id, ...rest } = created
     ok(id)
     deepEqual(rest, {
-      location: [location.lat, location.lng],
+      location,
       user: auth.at(0).user,
     })
   })
@@ -82,7 +82,7 @@ describe("MapResolver (e2e)", () => {
     })
     deepEqual(updated, {
       id: created.id,
-      location: [updatedLocation.lat, updatedLocation.lng],
+      location: updatedLocation,
       user: auth.at(0).user,
     })
   })

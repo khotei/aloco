@@ -1,4 +1,5 @@
 ﻿import { Field, Float, ID, ObjectType } from "@nestjs/graphql"
+import { Transform } from "class-transformer"
 import {
   Column,
   CreateDateColumn,
@@ -25,7 +26,14 @@ export class UserLocation {
   @Column({
     type: "json",
   })
-  @Field(() => [Float])
+  @Transform(({ value }) => {
+    if (Array.isArray(value) && value.length === 2) {
+      const [lat, lng] = value
+      return { lat, lng }
+    }
+    return null
+  })
+  @Field(() => Location)
   location: [number, number]
 
   @UpdateDateColumn()
@@ -36,4 +44,13 @@ export class UserLocation {
   @OneToOne(() => User, { eager: true })
   @Field(() => User)
   user: User
+}
+
+@ObjectType()
+class Location {
+  @Field(() => Float)
+  lat: number
+
+  @Field(() => Float)
+  lng: number
 }

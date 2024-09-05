@@ -1,4 +1,8 @@
-import { UseGuards } from "@nestjs/common"
+import {
+  ClassSerializerInterceptor,
+  UseGuards,
+  UseInterceptors,
+} from "@nestjs/common"
 import { Args, Mutation, Query, Resolver } from "@nestjs/graphql"
 import { InjectRepository } from "@nestjs/typeorm"
 import type { Repository } from "typeorm"
@@ -14,6 +18,7 @@ import { UsersLocationsResponse } from "@/dto/map/users-locations-response.dto"
 import { UserLocation } from "@/entities/user-location.entity"
 import { User } from "@/entities/user.entity"
 
+@UseInterceptors(ClassSerializerInterceptor)
 @Resolver()
 export class MapResolver {
   constructor(

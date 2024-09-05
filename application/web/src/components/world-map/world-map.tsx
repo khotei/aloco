@@ -61,7 +61,7 @@ export function WorldMap() {
               <UserMarker
                 authUser={authData.authUser.user}
                 key={ul.id}
-                location={{ lat: ul.location[0], lng: ul.location[1] }}
+                location={ul.location}
                 receiver={ul.user}
               />
             ))}
