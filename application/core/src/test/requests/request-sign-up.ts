@@ -1,8 +1,8 @@
 import { INestApplication } from "@nestjs/common"
 
-import { apprequest } from "@/test/apprequest"
+import { apprequest } from "@/test/requests/app-request"
 
-export async function testSignUp({ app }: { app: INestApplication<any> }) {
+export async function requestSignUp({ app }: { app: INestApplication<any> }) {
   const {
     registerTemporalUser: { token },
   } = await apprequest({ app }).RegisterTemporalUser()

@@ -6,10 +6,10 @@ import { INestApplication } from "@nestjs/common"
 import { Test, TestingModule } from "@nestjs/testing"
 import { DataSource } from "typeorm"
 
-import type { User } from "@/__generated__/scheme.generated"
+import type { UserFragmentFragment } from "@/__generated__/scheme.generated"
 import { AppModule } from "@/app.module"
-import { apprequest } from "@/test/apprequest"
-import { testSignUp } from "@/test/test-sign-up"
+import { apprequest } from "@/test/requests/app-request"
+import { requestSignUp } from "@/test/requests/request-sign-up"
 
 const fakeLocation = [
   {
@@ -28,7 +28,7 @@ const fakeLocation = [
 
 describe("MapResolver (e2e)", () => {
   let app: INestApplication
-  const auth: Partial<{ token: string; user: Partial<User> }>[] = []
+  const auth: Partial<{ token: string; user: UserFragmentFragment }>[] = []
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -38,7 +38,7 @@ describe("MapResolver (e2e)", () => {
     await app.init()
     await app.listen(0)
 
-    auth.push(await testSignUp({ app }))
+    auth.push(await requestSignUp({ app }))
   })
 
   afterEach(async () => {

@@ -1,0 +1,12 @@
+fragment InvitationFragment on Invitation {
+    id
+    sender {
+        ...UserFragment
+    }
+    receiver {
+        ...UserFragment
+    }
+    status
+    createdAt
+    updatedAt
+}

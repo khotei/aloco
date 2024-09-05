@@ -1,7 +1,7 @@
 query AuthUser {
     authUser {
         user {
-            id
+            ...UserFragment
         }
     }
 }

@@ -10,21 +10,24 @@ import { afterEach, beforeEach, describe, it } from "node:test"
 
 import { INestApplication } from "@nestjs/common"
 import { Test, TestingModule } from "@nestjs/testing"
-import { createClient } from "graphql-ws"
 import { DataSource } from "typeorm"
 
 import {
+  InvitationSentDocument,
   InvitationStatus,
   type SendInvitationInput,
-  type User,
+  type UserFragmentFragment,
 } from "@/__generated__/scheme.generated"
 import { AppModule } from "@/app.module"
-import { apprequest } from "@/test/apprequest"
-import { testSignUp } from "@/test/test-sign-up"
+import { apprequest } from "@/test/requests/app-request"
+import { appsubscribe } from "@/test/requests/app-subscribe"
+import { requestSendInvitation } from "@/test/requests/request-send-invitation"
+import { requestSignUp } from "@/test/requests/request-sign-up"
+import { subscribeInvitationSent } from "@/test/requests/subscribe-invitation-sent"
 
 describe("InvitationsResolver (e2e)", () => {
   let app: INestApplication
-  const auth: Partial<{ token: string; user: Partial<User> }>[] = []
+  const auth: Partial<{ token: string; user: UserFragmentFragment }>[] = []
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -34,10 +37,10 @@ describe("InvitationsResolver (e2e)", () => {
     await app.init()
     await app.listen(0)
 
-    auth.push(await testSignUp({ app }))
-    auth.push(await testSignUp({ app }))
-    auth.push(await testSignUp({ app }))
-    auth.push(await testSignUp({ app }))
+    auth.push(await requestSignUp({ app }))
+    auth.push(await requestSignUp({ app }))
+    auth.push(await requestSignUp({ app }))
+    auth.push(await requestSignUp({ app }))
   })
 
   afterEach(async () => {
@@ -52,13 +55,10 @@ describe("InvitationsResolver (e2e)", () => {
       status: InvitationStatus.Pending,
     }
     const authSender = auth.at(0)
-    const {
-      sendInvitation: { invitation },
-    } = await apprequest({
+    const { invitation } = await requestSendInvitation({
       app,
-      token: authSender.token,
-    }).SendInvitation({
       input,
+      token: authSender.token,
     })
     const { createdAt, id, updatedAt, ...restCreated } = invitation
     ok(id)
@@ -79,11 +79,10 @@ describe("InvitationsResolver (e2e)", () => {
     await rejects(
       async () => {
         try {
-          await apprequest({
+          await requestSendInvitation({
             app,
-            token: authSender.token,
-          }).SendInvitation({
             input,
+            token: authSender.token,
           })
         } catch (error) {
           throw error.response.errors.at(0).validationErrors
@@ -103,28 +102,22 @@ describe("InvitationsResolver (e2e)", () => {
     }
     const authSender = auth.at(0)
     const {
-      sendInvitation: {
-        invitation: { updatedAt: createdUpdatedAt, ...restCreated },
-      },
-    } = await apprequest({
+      invitation: { updatedAt: createdUpdatedAt, ...restCreated },
+    } = await requestSendInvitation({
       app,
-      token: authSender.token,
-    }).SendInvitation({
       input: createInput,
+      token: authSender.token,
     })
     const updateInput = {
       id: restCreated.id,
       status: InvitationStatus.Canceled,
     }
     const {
-      sendInvitation: {
-        invitation: { updatedAt: updatedUpdatedAt, ...restUpdated },
-      },
-    } = await apprequest({
+      invitation: { updatedAt: updatedUpdatedAt, ...restUpdated },
+    } = await requestSendInvitation({
       app,
-      token: authSender.token,
-    }).SendInvitation({
       input: updateInput,
+      token: authSender.token,
     })
     notEqual(createdUpdatedAt, updatedUpdatedAt)
     deepEqual(restUpdated, {
@@ -140,13 +133,10 @@ describe("InvitationsResolver (e2e)", () => {
       status: InvitationStatus.Pending,
     }
     const authSenderOwner = auth.at(1)
-    const {
-      sendInvitation: { invitation },
-    } = await apprequest({
+    const { invitation } = await requestSendInvitation({
       app,
-      token: authSenderOwner.token,
-    }).SendInvitation({
       input: createInput,
+      token: authSenderOwner.token,
     })
     const updateInput = {
       id: invitation.id,
@@ -156,11 +146,10 @@ describe("InvitationsResolver (e2e)", () => {
     await rejects(
       async () => {
         try {
-          await apprequest({
+          await requestSendInvitation({
             app,
-            token: authSenderNotOwner.token,
-          }).SendInvitation({
             input: updateInput,
+            token: authSenderNotOwner.token,
           })
         } catch (e) {
           throw e.response.errors.at(0)
@@ -179,34 +168,9 @@ describe("InvitationsResolver (e2e)", () => {
 
   it("should emit invitation when listener is sender", async () => {
     const authSender = auth.at(0)
-    const url = `http://127.0.0.1:${app.getHttpServer().address().port}/graphql`
-    const client = createClient({
-      connectionParams: {
-        Authorization: `Bearer ${authSender.token}`,
-      },
-      url,
-    })
-    /**
-     * @todo: improve type-safe
-     */
-    const sub = client.iterate({
-      query: `
-          subscription InvitationSent {
-  invitationSent {
-    invitation {
-      id
-      sender {
-        id
-      }
-      receiver {
-        id
-      }
-      status
-      createdAt
-      updatedAt
-    }
-  }
-}`,
+    const { sub } = await subscribeInvitationSent({
+      app,
+      token: authSender.token,
     })
 
     const authReceiver = auth.at(1)
@@ -214,13 +178,10 @@ describe("InvitationsResolver (e2e)", () => {
       receiverId: authReceiver.user.id,
       status: InvitationStatus.Pending,
     }
-    const {
-      sendInvitation: { invitation: created },
-    } = await apprequest({
+    const { invitation: created } = await requestSendInvitation({
       app,
-      token: authSender.token,
-    }).SendInvitation({
       input: createInput,
+      token: authSender.token,
     })
     const {
       value: {
@@ -235,34 +196,9 @@ describe("InvitationsResolver (e2e)", () => {
 
   it("should emit invitation when listener is receiver", async () => {
     const authReceiver = auth.at(1)
-    const url = `http://127.0.0.1:${app.getHttpServer().address().port}/graphql`
-    const client = createClient({
-      connectionParams: {
-        Authorization: `Bearer ${authReceiver.token}`,
-      },
-      url,
-    })
-    /**
-     * @todo: improve type-safe
-     */
-    const sub = client.iterate({
-      query: `
-          subscription InvitationSent {
-  invitationSent {
-    invitation {
-      id
-      sender {
-        id
-      }
-      receiver {
-        id
-      }
-      status
-      createdAt
-      updatedAt
-    }
-  }
-}`,
+    const { sub } = await subscribeInvitationSent({
+      app,
+      token: authReceiver.token,
     })
 
     const authSender = auth.at(0)
@@ -270,13 +206,10 @@ describe("InvitationsResolver (e2e)", () => {
       receiverId: authReceiver.user.id,
       status: InvitationStatus.Pending,
     }
-    const {
-      sendInvitation: { invitation: created },
-    } = await apprequest({
+    const { invitation: created } = await requestSendInvitation({
       app,
-      token: authSender.token,
-    }).SendInvitation({
       input: createInput,
+      token: authSender.token,
     })
     const {
       value: {
@@ -291,48 +224,19 @@ describe("InvitationsResolver (e2e)", () => {
 
   it("should emit accepted invitation for sender when receiver accept", async () => {
     const authReceiver = auth.at(1)
-    const url = `http://127.0.0.1:${app.getHttpServer().address().port}/graphql`
-    const client = createClient({
-      connectionParams: {
-        Authorization: `Bearer ${authReceiver.token}`,
-      },
-      url,
+    const { sub } = await subscribeInvitationSent({
+      app,
+      token: authReceiver.token,
     })
-    /**
-     * @todo: improve type-safe
-     */
-    const sub = client.iterate({
-      query: `
-          subscription InvitationSent {
-  invitationSent {
-    invitation {
-      id
-      sender {
-        id
-      }
-      receiver {
-        id
-      }
-      status
-      createdAt
-      updatedAt
-    }
-  }
-}`,
-    })
-
     const authSender = auth.at(0)
     const createInput = {
       receiverId: authReceiver.user.id,
       status: InvitationStatus.Pending,
     }
-    const {
-      sendInvitation: { invitation: created },
-    } = await apprequest({
+    const { invitation: created } = await requestSendInvitation({
       app,
-      token: authSender.token,
-    }).SendInvitation({
       input: createInput,
+      token: authSender.token,
     })
     const {
       value: {
@@ -341,7 +245,6 @@ describe("InvitationsResolver (e2e)", () => {
         },
       },
     } = await sub.next()
-    console.log("createdEmitted", createdEmitted)
     deepEqual(createdEmitted, created)
 
     const acceptInput = {
@@ -369,34 +272,10 @@ describe("InvitationsResolver (e2e)", () => {
 
   it("should not emit invitation when listener is not receiver or sender", async () => {
     const authListener = auth.at(3)
-    const url = `http://127.0.0.1:${app.getHttpServer().address().port}/graphql`
-    const client = createClient({
-      connectionParams: {
-        Authorization: `Bearer ${authListener.token}`,
-      },
-      url,
-    })
-    /**
-     * @todo: improve type-safe
-     */
-    const sub = client.iterate({
-      query: `
-          subscription InvitationSent {
-  invitationSent {
-    invitation {
-      id
-      sender {
-        id
-      }
-      receiver {
-        id
-      }
-      status
-      createdAt
-      updatedAt
-    }
-  }
-}`,
+    const { sub } = await appsubscribe({
+      app,
+      query: InvitationSentDocument.loc.source.body,
+      token: authListener.token,
     })
 
     const authSender = auth.at(0)
@@ -405,12 +284,12 @@ describe("InvitationsResolver (e2e)", () => {
       receiverId: authReceiver.user.id,
       status: InvitationStatus.Pending,
     }
-    await apprequest({
+    await requestSendInvitation({
       app,
-      token: authSender.token,
-    }).SendInvitation({
       input: createInput,
+      token: authSender.token,
     })
+
     const timeoutPromise = new Promise((resolve) => setTimeout(resolve, 1000))
     let received = false
     sub.next().then(() => {

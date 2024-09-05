@@ -9,7 +9,7 @@ async function bootstrap() {
   await app.init()
   await generate(
     {
-      documents: "src/**/*.document.graphql",
+      documents: "src/test/documents/**/*.graphql",
       generates: {
         "src/__generated__/scheme.generated.ts": {
           config: {

@@ -1,11 +1,7 @@
 mutation SaveUserLocation($input: SaveUserLocationInput!) {
     saveUserLocation(saveUserLocationInput: $input) {
         userLocation {
-            id
-            user {
-                id
-            }
-            location
+            ...UserLocationFragment
         }
     }
 }
