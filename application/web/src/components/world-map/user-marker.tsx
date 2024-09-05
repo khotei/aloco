@@ -48,13 +48,9 @@ export function UserMarker({
   const currentUser = authUser.id === receiver.id
 
   /**
-   * @todo: prevent multiple sending
+   * @todo: check if user busy
    *
-   * some how you should track updates of invitation.
-   *
-   * get invitation from initial render. active invitation. delete after timeout.
-   * get invitation from subscription(updates). delete on cancel, reject.
-   * prevent if there active invitation.
+   * check if receiver has active invitation
    */
 
   return (

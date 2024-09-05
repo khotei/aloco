@@ -9,9 +9,10 @@ import { Observable } from "rxjs"
 import { tap } from "rxjs/operators"
 
 import type { InvitationResponse } from "@/__generated__/scheme.generated"
+import { InvitationResponse as GqlInvitationResponse } from "@/dto/invitations/invitation-response.dto"
 
 export type InvitationSentEvent = {
-  invitationSent: InvitationResponse
+  invitationSent: GqlInvitationResponse | InvitationResponse
 }
 
 export const INVITATION_SENT_EVENT_KEY = "invitationSent"
@@ -23,10 +24,19 @@ export class InvitationSentInterceptor implements NestInterceptor {
   intercept(_: ExecutionContext, next: CallHandler): Observable<any> {
     return next.handle().pipe(
       tap(async (invitationRes: InvitationResponse) => {
-        await this.pubSub.publish(INVITATION_SENT_EVENT_KEY, {
-          [INVITATION_SENT_EVENT_KEY]: invitationRes,
-        })
+        await this.pubSub.publish(
+          INVITATION_SENT_EVENT_KEY,
+          buildInvitationEvent(invitationRes)
+        )
       })
     )
+  }
+}
+
+export function buildInvitationEvent(
+  invitationRes: GqlInvitationResponse | InvitationResponse
+): InvitationSentEvent {
+  return {
+    [INVITATION_SENT_EVENT_KEY]: invitationRes,
   }
 }

@@ -1,7 +1,8 @@
 import { useInvitations } from "@/components/invitations-provider"
 import { useInvitationSub } from "@/hooks/use-invitation-sub"
 
-import { Invitation, ToastContainer } from "./invitation"
+import { Invitation } from "./invitation"
+import { ToastContainer } from "./toast"
 
 export function Invitations() {
   const { addInvitation, invitations } = useInvitations()

@@ -5,6 +5,7 @@ import {
   type ApolloDriverConfig,
   ValidationError,
 } from "@nestjs/apollo"
+import { BullModule } from "@nestjs/bull"
 import { Module, ValidationPipe } from "@nestjs/common"
 import { APP_PIPE } from "@nestjs/core"
 import { GraphQLModule } from "@nestjs/graphql"
@@ -17,6 +18,7 @@ import { JwtStrategy } from "@/authentication/strategies/jwt.strategy"
 import { Invitation } from "@/entities/invitation.entity"
 import { UserLocation } from "@/entities/user-location.entity"
 import { User } from "@/entities/user.entity"
+import { INVITATION_TIMEOUT_QUEUE_KEY } from "@/interceptors/invitation-timeout-interceptor"
 import { AuthenticationResolver } from "@/resolvers/authentication.resolver"
 import { InvitationsResolver } from "@/resolvers/invitations.resolver"
 import { MapResolver } from "@/resolvers/map.resolver"
@@ -34,6 +36,14 @@ import { MapResolver } from "@/resolvers/map.resolver"
       username: "test",
     }),
     TypeOrmModule.forFeature([User, UserLocation, Invitation]),
+    BullModule.forRoot({
+      redis: {
+        host: "localhost",
+      },
+    }),
+    BullModule.registerQueue({
+      name: INVITATION_TIMEOUT_QUEUE_KEY,
+    }),
     GraphQLModule.forRoot<ApolloDriverConfig>({
       autoSchemaFile: join(process.cwd(), "src/__generated__/schema.graphql"),
       driver: ApolloDriver,

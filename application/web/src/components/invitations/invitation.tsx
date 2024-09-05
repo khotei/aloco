@@ -1,9 +1,5 @@
 import { AlertStatus } from "@chakra-ui/alert"
-import {
-  createStandaloneToast,
-  type ToastId,
-  type UseToastOptions,
-} from "@chakra-ui/react"
+import { type ToastId, type UseToastOptions } from "@chakra-ui/react"
 import { useNavigate } from "@tanstack/react-router"
 import { useEffect, useMemo, useState } from "react"
 
@@ -12,8 +8,10 @@ import {
   InvitationStatus,
 } from "@/codegen/__generated__/gql/graphql"
 import { useInvitations } from "@/components/invitations-provider"
+import { useAuthUser } from "@/hooks/use-auth-user"
 
 import { InvitationDescription } from "./invitation-description"
+import { toast } from "./toast"
 
 export function Invitation({
   invitation,
@@ -31,22 +29,25 @@ export function Invitation({
         toast.close(toastId)
       }
     }
-  }, [toast, toastId])
+  }, [toastId])
 
-  /**
-   * @todo: fix toast that out of token provider
-   * WTF???
-   * why it doesn't get context
-   *
-   * workaround is to pass outside as props
-   */
-  const toastProps: UseToastOptions = useMemo(
-    () => ({
-      description: <InvitationDescription invitation={invitation} />,
+  const auth = useAuthUser()
+  const { sendInvitation } = useInvitations()
+  const toastProps: UseToastOptions = useMemo(() => {
+    if (!auth.data) {
+      throw new Error("User should be authenticated.")
+    }
+    return {
+      description: (
+        <InvitationDescription
+          authUser={auth.data.authUser.user}
+          invitation={invitation}
+          sendInvitation={sendInvitation}
+        />
+      ),
       status: invitationToastStatus[invitation.status],
-    }),
-    [invitation]
-  )
+    }
+  }, [auth.data, invitation, sendInvitation])
   const [lastInvitation, setLastInvitation] =
     useState<InvitationFragmentFragment>(invitation)
   useEffect(() => {
@@ -59,12 +60,8 @@ export function Invitation({
       toast.update(toastId, toastProps)
       setLastInvitation(invitation)
     }
-  }, [invitation, lastInvitation.status, toast, toastId, toastProps])
+  }, [invitation, lastInvitation.status, toastId, toastProps])
 
-  /**
-   * @todo: imp. timout on BE and emit it.
-   * track this status and show notification.
-   */
   const { removeInvitation } = useInvitations()
   const navigate = useNavigate()
   useEffect(() => {
@@ -75,27 +72,19 @@ export function Invitation({
       if (invitation.status === InvitationStatus.Accepted) {
         navigate({ to: "/room/10" })
       }
-      //
-      // if (toastId) {
-      //   toast.close(toastId)
-      // }
-      // removeInvitation(invitation)
+
+      if (toastId) {
+        toast.close(toastId)
+      }
+      removeInvitation(invitation)
     }, timeout)
     return () => {
       clearTimeout(timeoutId)
     }
-  }, [invitation, navigate, removeInvitation, toast, toastId])
+  }, [invitation, navigate, removeInvitation, toastId])
 
   return null
 }
-
-export const { toast, ToastContainer } = createStandaloneToast({
-  defaultOptions: {
-    duration: null,
-    position: "bottom-right",
-    title: "Invitation.",
-  },
-})
 
 const invitationToastStatus: Record<InvitationStatus, AlertStatus> = {
   [InvitationStatus.Accepted]: "success",

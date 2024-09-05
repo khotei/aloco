@@ -1,19 +1,24 @@
 import { Box, Button, Flex, Text } from "@chakra-ui/react"
+import type { UserFragmentFragment } from "core/dist/__generated__/scheme.generated"
 import { useCallback, useState } from "react"
 
 import {
   type InvitationFragmentFragment,
   InvitationStatus,
+  type SendInvitationInput,
 } from "@/codegen/__generated__/gql/graphql"
-import { useInvitations } from "@/components/invitations-provider"
-import { useAuthUser } from "@/hooks/use-auth-user"
 
 export function InvitationDescription({
+  authUser,
   invitation,
+  sendInvitation,
 }: {
+  authUser: UserFragmentFragment
   invitation: InvitationFragmentFragment
+  sendInvitation: (
+    input: SendInvitationInput
+  ) => Promise<InvitationFragmentFragment>
 }) {
-  const { sendInvitation } = useInvitations()
   const [statusLoading, setLoadingStatus] = useState<InvitationStatus | null>(
     null
   )
@@ -29,29 +34,24 @@ export function InvitationDescription({
         setLoadingStatus(null)
       }
     },
-    []
+    [invitation.id, sendInvitation]
   )
   const handleAccept = useCallback(async () => {
     await updateInvitation({ status: InvitationStatus.Accepted })
-  }, [invitation.id, sendInvitation])
+  }, [updateInvitation])
   const handleReject = useCallback(async () => {
     await updateInvitation({ status: InvitationStatus.Rejected })
-  }, [invitation.id, sendInvitation])
+  }, [updateInvitation])
   const handleCancel = useCallback(async () => {
     await updateInvitation({ status: InvitationStatus.Canceled })
-  }, [invitation.id, sendInvitation])
+  }, [updateInvitation])
 
   const isCancelling = statusLoading === InvitationStatus.Canceled
   const isAccepting = statusLoading === InvitationStatus.Accepted
   const isRejecting = statusLoading === InvitationStatus.Rejected
   const isLoading = isAccepting || isCancelling || isRejecting
 
-  const auth = useAuthUser()
-  if (!auth.data) {
-    throw new Error("User should be authenticated.")
-  }
-  const isAuthUserReceiver =
-    auth.data.authUser.user.id === invitation.receiver.id
+  const isAuthUserReceiver = authUser.id === invitation.receiver.id
 
   switch (invitation.status) {
     case InvitationStatus.Pending:
