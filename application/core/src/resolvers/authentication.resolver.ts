@@ -34,7 +34,7 @@ export class AuthenticationResolver {
 
   @UseGuards(JwtAuthGuard)
   @Query(() => AuthResponse, { name: "authUser" })
-  async getAuthUser(@Auth() auth: AuthPayload): Promise<{ user: User }> {
+  async getAuthUser(@Auth() auth: AuthPayload): Promise<AuthResponse> {
     const user = await this.usersRepo.findOneByOrFail({ id: auth.userId })
     return { user }
   }

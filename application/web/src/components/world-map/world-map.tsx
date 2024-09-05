@@ -1,7 +1,7 @@
-import { Box } from "@chakra-ui/react"
+import { Box, useInterval } from "@chakra-ui/react"
 import { useGeolocation } from "@uidotdev/usehooks"
 import { APIProvider, Map } from "@vis.gl/react-google-maps"
-import { useEffect } from "react"
+import { useCallback } from "react"
 
 import { Invitations } from "@/components/invitations"
 import { InvitationsProvider } from "@/components/invitations-provider"
@@ -22,9 +22,10 @@ export function WorldMap() {
   })
   /**
    * @todo: refresh only once, when prev not exists but current exists
+   * put current user geo to the map, filter it from useUsersLocations
    */
   const [saveLocation] = useSaveUserLocation({ onCompleted: () => refetch() })
-  useEffect(() => {
+  const saveCurrentLocation = useCallback(() => {
     if (latitude && longitude) {
       saveLocation({
         variables: {
@@ -38,6 +39,7 @@ export function WorldMap() {
       })
     }
   }, [saveLocation, latitude, longitude])
+  useInterval(() => saveCurrentLocation(), 4000)
 
   const { data: authData } = useAuthUser()
   if (!authData) {

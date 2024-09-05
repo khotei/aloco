@@ -5,7 +5,7 @@ import {
 } from "@nestjs/common"
 import { Args, Mutation, Query, Resolver } from "@nestjs/graphql"
 import { InjectRepository } from "@nestjs/typeorm"
-import type { Repository } from "typeorm"
+import { MoreThanOrEqual, type Repository } from "typeorm"
 
 import {
   Auth,
@@ -19,6 +19,7 @@ import { UserLocation } from "@/entities/user-location.entity"
 import { User } from "@/entities/user.entity"
 
 @UseInterceptors(ClassSerializerInterceptor)
+@UseGuards(JwtAuthGuard)
 @Resolver()
 export class MapResolver {
   constructor(
@@ -28,14 +29,18 @@ export class MapResolver {
     private userRepo: Repository<User>
   ) {}
 
-  @UseGuards(JwtAuthGuard)
   @Query(() => UsersLocationsResponse, { name: "usersLocations" })
   async find(): Promise<UsersLocationsResponse> {
-    const usersLocations = await this.userLocationRepo.find()
+    const onlineMs = 5000
+    const minUpdatedAt = new Date(new Date().getTime() - onlineMs)
+    const usersLocations = await this.userLocationRepo.find({
+      where: {
+        updatedAt: MoreThanOrEqual(minUpdatedAt),
+      },
+    })
     return { usersLocations }
   }
 
-  @UseGuards(JwtAuthGuard)
   @Mutation(() => UserLocationResponse, { name: "saveUserLocation" })
   async save(
     @Auth() auth: AuthPayload,
