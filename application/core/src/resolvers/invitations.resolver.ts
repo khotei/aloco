@@ -13,7 +13,11 @@ import { InvitationResponse } from "@/dto/invitations/invitation-response.dto"
 import { SendInvitationInput } from "@/dto/invitations/send-invitation-input.dto"
 import { Invitation } from "@/entities/invitation.entity"
 import { User } from "@/entities/user.entity"
-import { InvitationSentInterceptor } from "@/interceptors/invitation-sent-interceptor"
+import {
+  INVITATION_SENT_EVENT_KEY,
+  type InvitationSentEvent,
+  InvitationSentInterceptor,
+} from "@/interceptors/invitation-sent-interceptor"
 
 @Resolver()
 export class InvitationsResolver {
@@ -26,28 +30,18 @@ export class InvitationsResolver {
   ) {}
   @UseGuards(JwtAuthGuard)
   @Subscription(() => InvitationResponse, {
-    /**
-     * @todo: improve type-safe
-     */
-    filter(invitationRes: InvitationResponse, _: any, context: any) {
+    filter(invitationRes: InvitationSentEvent, _: void, context: any) {
       return [
-        invitationRes.invitation.receiver.id,
-        invitationRes.invitation.sender.id,
+        invitationRes.invitationSent.invitation.receiver.id,
+        invitationRes.invitationSent.invitation.sender.id,
       ].includes(context.req.user.userId)
     },
-    name: "invitationSent",
-    /**
-     * @todo: why emitInvitation return null without resolver
-     *
-     * asyncIterator return wrong value
-     * maybe it returns {value: {...}} instead {...}
-     */
-    resolve(value) {
-      return value
-    },
+    name: INVITATION_SENT_EVENT_KEY,
   })
   async emitInvitation() {
-    return this.pubSub.asyncIterator<InvitationResponse>("invitationSent")
+    return this.pubSub.asyncIterator<InvitationResponse>(
+      INVITATION_SENT_EVENT_KEY
+    )
   }
 
   @UseGuards(JwtAuthGuard)
