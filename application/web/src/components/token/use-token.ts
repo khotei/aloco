@@ -4,6 +4,7 @@ export const tokenCtx = createContext<
   | [null | string | undefined, (token: null | string | undefined) => void]
   | undefined
 >(undefined)
+tokenCtx.displayName = "TokenContext"
 
 export const useToken = () => {
   const ctx = useContext(tokenCtx)

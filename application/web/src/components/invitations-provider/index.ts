@@ -1,1 +1,2 @@
-export { InvitationsProvider, useInvitations } from "./invitations-provider"
+export { InvitationsProvider } from "./invitations-provider"
+export { useInvitations } from "./use-invitations"
