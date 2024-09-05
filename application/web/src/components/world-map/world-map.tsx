@@ -1,7 +1,7 @@
-import { Box, useInterval } from "@chakra-ui/react"
+import { Box, useInterval, usePrevious } from "@chakra-ui/react"
 import { useGeolocation } from "@uidotdev/usehooks"
 import { APIProvider, Map } from "@vis.gl/react-google-maps"
-import { useCallback } from "react"
+import { useCallback, useEffect, useMemo } from "react"
 
 import { Invitations } from "@/components/invitations"
 import { InvitationsProvider } from "@/components/invitations-provider"
@@ -13,18 +13,11 @@ import { useUsersLocations } from "@/hooks/use-users-locations"
 const GOOGLE_MAPS_API_KEY = "AIzaSyCUZf3em7J8q8WkWOfjJ1B9c5N1aKrDiVI"
 
 export function WorldMap() {
-  const { data: locationsData, refetch } = useUsersLocations({
-    pollInterval: 5000,
-  })
   const { latitude, longitude } = useGeolocation({
     enableHighAccuracy: true,
     maximumAge: 5_000,
   })
-  /**
-   * @todo: refresh only once, when prev not exists but current exists
-   * put current user geo to the map, filter it from useUsersLocations
-   */
-  const [saveLocation] = useSaveUserLocation({ onCompleted: () => refetch() })
+  const [saveLocation, { data }] = useSaveUserLocation()
   const saveCurrentLocation = useCallback(() => {
     if (latitude && longitude) {
       saveLocation({
@@ -39,8 +32,34 @@ export function WorldMap() {
       })
     }
   }, [saveLocation, latitude, longitude])
+  const prevGeolocation = usePrevious({ latitude, longitude })
+  useEffect(() => {
+    if (!prevGeolocation?.latitude && !prevGeolocation?.longitude) {
+      saveCurrentLocation()
+    }
+  }, [prevGeolocation, saveCurrentLocation])
   useInterval(() => saveCurrentLocation(), 4000)
 
+  const { data: locationsData } = useUsersLocations({
+    pollInterval: 5000,
+  })
+  const locations = useMemo(
+    () =>
+      /**
+       * @todo: why google map re-create mark each time?
+       */
+      [
+        ...(locationsData?.usersLocations.usersLocations ?? []).filter(
+          (location) =>
+            location.user.id !== data?.saveUserLocation?.userLocation.user.id
+        ),
+        data?.saveUserLocation?.userLocation,
+      ].filter((location) => location !== undefined),
+    [
+      data?.saveUserLocation?.userLocation,
+      locationsData?.usersLocations?.usersLocations,
+    ]
+  )
   const { data: authData } = useAuthUser()
   if (!authData) {
     throw new Error("User should be authenticated.")
@@ -59,7 +78,7 @@ export function WorldMap() {
             mapId={"worldMap"}
           />
           {authData &&
-            locationsData?.usersLocations.usersLocations.map((ul) => (
+            locations.map((ul) => (
               <UserMarker
                 authUser={authData.authUser.user}
                 key={ul.id}
