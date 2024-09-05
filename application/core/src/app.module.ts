@@ -11,6 +11,7 @@ import { GraphQLModule } from "@nestjs/graphql"
 import { JwtModule } from "@nestjs/jwt"
 import { PassportModule as NestPassportModule } from "@nestjs/passport"
 import { TypeOrmModule } from "@nestjs/typeorm"
+import { PubSub } from "graphql-subscriptions"
 
 import { JwtStrategy } from "@/authentication/strategies/jwt.strategy"
 import { Invitation } from "@/entities/invitation.entity"
@@ -77,6 +78,10 @@ import { MapResolver } from "@/resolvers/map.resolver"
         },
         whitelist: true,
       }),
+    },
+    {
+      provide: PubSub,
+      useValue: new PubSub(),
     },
     AuthenticationResolver,
     JwtStrategy,
