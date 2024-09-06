@@ -168,7 +168,7 @@ describe("InvitationsResolver (e2e)", () => {
 
   it("should emit invitation when listener is sender", async () => {
     const authSender = auth.at(0)
-    const { sub } = await subscribeInvitationSent({
+    const { sub: senderSub } = await subscribeInvitationSent({
       app,
       token: authSender.token,
     })
@@ -189,14 +189,14 @@ describe("InvitationsResolver (e2e)", () => {
           invitationSent: { invitation: emitted },
         },
       },
-    } = await sub.next()
+    } = await senderSub.next()
     deepEqual(emitted, created)
-    await sub.return()
+    await senderSub.return()
   })
 
   it("should emit invitation when listener is receiver", async () => {
     const authReceiver = auth.at(1)
-    const { sub } = await subscribeInvitationSent({
+    const { sub: receiverSub } = await subscribeInvitationSent({
       app,
       token: authReceiver.token,
     })
@@ -217,14 +217,14 @@ describe("InvitationsResolver (e2e)", () => {
           invitationSent: { invitation: emitted },
         },
       },
-    } = await sub.next()
+    } = await receiverSub.next()
     deepEqual(emitted, created)
-    await sub.return()
+    await receiverSub.return()
   })
 
   it("should emit accepted invitation for sender when receiver accept", async () => {
     const authReceiver = auth.at(1)
-    const { sub } = await subscribeInvitationSent({
+    const { sub: receiverSub } = await subscribeInvitationSent({
       app,
       token: authReceiver.token,
     })
@@ -244,7 +244,7 @@ describe("InvitationsResolver (e2e)", () => {
           invitationSent: { invitation: createdEmitted },
         },
       },
-    } = await sub.next()
+    } = await receiverSub.next()
     deepEqual(createdEmitted, created)
 
     const acceptInput = {
@@ -265,14 +265,14 @@ describe("InvitationsResolver (e2e)", () => {
           invitationSent: { invitation: acceptedEmmitted },
         },
       },
-    } = await sub.next()
+    } = await receiverSub.next()
     deepEqual(acceptedEmmitted, accepted)
-    await sub.return()
+    await receiverSub.return()
   })
 
   it("should not emit invitation when listener is not receiver or sender", async () => {
     const authListener = auth.at(3)
-    const { sub } = await appsubscribe({
+    const { sub: alientSub } = await appsubscribe({
       app,
       query: InvitationSentDocument.loc.source.body,
       token: authListener.token,
@@ -292,11 +292,11 @@ describe("InvitationsResolver (e2e)", () => {
 
     const timeoutPromise = new Promise((resolve) => setTimeout(resolve, 1000))
     let received = false
-    sub.next().then(() => {
+    alientSub.next().then(() => {
       received = true
     })
     await timeoutPromise
     equal(received, false)
-    await sub.return()
+    await alientSub.return()
   })
 })

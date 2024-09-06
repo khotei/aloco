@@ -26,7 +26,7 @@ registerEnumType(invitationStatus, {
 @Entity()
 @ObjectType()
 export class Invitation {
-  @CreateDateColumn()
+  @CreateDateColumn({ type: "timestamptz" })
   @Field()
   createdAt: Date
 
@@ -48,7 +48,7 @@ export class Invitation {
   @Field(() => invitationStatus)
   status: invitationStatus
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ type: "timestamptz" })
   @Field()
   updatedAt: Date
 }

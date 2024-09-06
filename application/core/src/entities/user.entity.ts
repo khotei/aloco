@@ -9,7 +9,7 @@ import {
 @Entity()
 @ObjectType()
 export class User {
-  @CreateDateColumn()
+  @CreateDateColumn({ type: "timestamptz" })
   @Field()
   createdAt: Date
 
@@ -17,7 +17,7 @@ export class User {
   @Field(() => ID)
   id: number
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ type: "timestamptz" })
   @Field()
   updatedAt: Date
 }

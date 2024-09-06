@@ -15,7 +15,7 @@ import { User } from "@/entities/user.entity"
 @Entity()
 @ObjectType()
 export class UserLocation {
-  @CreateDateColumn()
+  @CreateDateColumn({ type: "timestamptz" })
   @Field()
   createdAt: Date
 
@@ -36,7 +36,7 @@ export class UserLocation {
   @Field(() => Location)
   location: [number, number]
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ type: "timestamptz" })
   @Field()
   updatedAt: Date
 
