@@ -42,7 +42,7 @@ export class InvitationsResolver {
       return [
         invitationRes.invitationSent.invitation.receiver.id,
         invitationRes.invitationSent.invitation.sender.id,
-      ].includes(context.req.user.userId)
+      ].includes(context.req.auth.userId)
     },
     name: INVITATION_SENT_EVENT_KEY,
   })

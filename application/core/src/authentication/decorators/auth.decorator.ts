@@ -8,6 +8,6 @@ export interface AuthPayload {
 export const Auth = createParamDecorator(
   (data: unknown, context: ExecutionContext): AuthPayload => {
     const ctx = GqlExecutionContext.create(context)
-    return ctx.getContext().req.user
+    return ctx.getContext().req.auth
   }
 )

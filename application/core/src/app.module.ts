@@ -60,7 +60,7 @@ import { MapResolver } from "@/resolvers/map.resolver"
         "graphql-ws": true,
       },
     }),
-    NestPassportModule,
+    NestPassportModule.register({ property: "auth" }),
     JwtModule.register({
       secret: "secret",
     }),

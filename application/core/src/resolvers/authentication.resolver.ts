@@ -25,7 +25,7 @@ export class AuthenticationResolver {
   async createTemporalUser(): Promise<TokenResponse> {
     const user = await this.usersRepo.save(this.usersRepo.create())
 
-    const jwtPayload: JwtPayload = { sub: user.id }
+    const jwtPayload: JwtPayload = { user_id: user.id }
     const token = await this.jwtService.signAsync(jwtPayload, {
       secret: "secret",
     })

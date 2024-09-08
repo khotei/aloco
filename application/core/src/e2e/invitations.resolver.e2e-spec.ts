@@ -195,6 +195,9 @@ describe("InvitationsResolver (e2e)", () => {
   })
 
   it("should emit invitation when listener is receiver", async () => {
+    /**
+     * @todo: why timeout status is set?
+     */
     const authReceiver = auth.at(1)
     const { sub: receiverSub } = await subscribeInvitationSent({
       app,
