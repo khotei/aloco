@@ -1,8 +1,8 @@
 import { useEffect } from "react"
 
 import { useToken } from "@/components/token"
-import { useAuthUser } from "@/hooks/use-auth-user"
-import { useRegisterTemporalUser } from "@/hooks/use-register-temporal-user"
+import { useAuthUser } from "@/hooks/auth/use-auth-user"
+import { useRegisterTemporalUser } from "@/hooks/auth/use-register-temporal-user"
 
 export function AuthInitializer() {
   useAuthUser()

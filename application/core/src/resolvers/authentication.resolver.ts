@@ -2,6 +2,7 @@ import { UseGuards } from "@nestjs/common"
 import { Mutation, Query, Resolver } from "@nestjs/graphql"
 import { JwtService } from "@nestjs/jwt"
 import { InjectRepository } from "@nestjs/typeorm"
+import { StreamClient } from "@stream-io/node-sdk"
 import { Repository } from "typeorm"
 
 import {
@@ -21,11 +22,25 @@ export class AuthenticationResolver {
     private readonly usersRepo: Repository<User>,
     private readonly jwtService: JwtService
   ) {}
+  @UseGuards(JwtAuthGuard)
+  @Mutation(() => TokenResponse, { name: "createStreamToken" })
+  async createStreamToken(@Auth() auth: AuthPayload): Promise<TokenResponse> {
+    /**
+     * @todo: improve. move to the service or separate resolver
+     */
+    const client = new StreamClient(
+      "nkz32n9y386u",
+      "xkh7qyb2agqw8b3usbx6357jgkvjvs8by43d5ngqfevckg4bhrq42hpf8mv8tms5"
+    )
+    const token = client.generateUserToken({ user_id: auth.userId.toString() })
+    return { token }
+  }
+
   @Mutation(() => TokenResponse, { name: "registerTemporalUser" })
   async createTemporalUser(): Promise<TokenResponse> {
     const user = await this.usersRepo.save(this.usersRepo.create())
 
-    const jwtPayload: JwtPayload = { user_id: user.id }
+    const jwtPayload: JwtPayload = { userId: user.id }
     const token = await this.jwtService.signAsync(jwtPayload, {
       secret: "secret",
     })

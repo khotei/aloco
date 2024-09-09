@@ -6,9 +6,9 @@ import { useCallback, useEffect, useMemo } from "react"
 import { Invitations } from "@/components/invitations"
 import { InvitationsProvider } from "@/components/invitations-provider"
 import { UserMarker } from "@/components/world-map/user-marker"
-import { useAuthUser } from "@/hooks/use-auth-user"
-import { useSaveUserLocation } from "@/hooks/use-save-user-location"
-import { useUsersLocations } from "@/hooks/use-users-locations"
+import { useAuthUser } from "@/hooks/auth/use-auth-user"
+import { useSaveUserLocation } from "@/hooks/map/use-save-user-location"
+import { useUsersLocations } from "@/hooks/map/use-users-locations"
 
 const GOOGLE_MAPS_API_KEY = "AIzaSyCUZf3em7J8q8WkWOfjJ1B9c5N1aKrDiVI"
 

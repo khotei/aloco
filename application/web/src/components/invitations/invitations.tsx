@@ -1,5 +1,5 @@
 import { useInvitations } from "@/components/invitations-provider"
-import { useInvitationSub } from "@/hooks/use-invitation-sub"
+import { useInvitationSub } from "@/hooks/invitations/use-invitation-sub"
 
 import { Invitation } from "./invitation"
 import { ToastContainer } from "./toast"

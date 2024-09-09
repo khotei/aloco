@@ -8,7 +8,7 @@ import {
   InvitationStatus,
 } from "@/codegen/__generated__/gql/graphql"
 import { useInvitations } from "@/components/invitations-provider"
-import { useAuthUser } from "@/hooks/use-auth-user"
+import { useAuthUser } from "@/hooks/auth/use-auth-user"
 
 import { InvitationDescription } from "./invitation-description"
 import { toast } from "./toast"

@@ -4,7 +4,7 @@ import {
   InvitationFragmentFragment,
   SendInvitationInput,
 } from "@/codegen/__generated__/gql/graphql"
-import { useSendInvitation } from "@/hooks/use-send-invitation"
+import { useSendInvitation } from "@/hooks/invitations/use-send-invitation"
 
 export function useInvitationsStore() {
   const [invitations, setInvitations] = useState<InvitationFragmentFragment[]>(

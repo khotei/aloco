@@ -7,4 +7,5 @@ fragment UserLocationFragment on UserLocation {
         lat
         lng
     }
+    updatedAt
 }
