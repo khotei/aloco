@@ -3,6 +3,7 @@ import { useGeolocation } from "@uidotdev/usehooks"
 import { APIProvider, Map } from "@vis.gl/react-google-maps"
 import { useCallback, useEffect, useMemo } from "react"
 
+import type { UserLocationFragmentFragment } from "@/codegen/__generated__/gql/graphql"
 import { Invitations } from "@/components/invitations"
 import { InvitationsProvider } from "@/components/invitations-provider"
 import { UserMarker } from "@/components/world-map/user-marker"
@@ -17,7 +18,7 @@ export function WorldMap() {
     enableHighAccuracy: true,
     maximumAge: 5_000,
   })
-  const [saveLocation, { data }] = useSaveUserLocation()
+  const [saveLocation, { data: saveUserLocationData }] = useSaveUserLocation()
   const saveCurrentLocation = useCallback(() => {
     if (latitude && longitude) {
       saveLocation({
@@ -45,23 +46,20 @@ export function WorldMap() {
   })
   const locations = useMemo(
     () =>
-      /**
-       * @todo: why google map re-create mark each time?
-       */
-      [
-        ...(locationsData?.usersLocations.usersLocations ?? []).filter(
-          (location) =>
-            location.user.id !== data?.saveUserLocation?.userLocation.user.id
-        ),
-        data?.saveUserLocation?.userLocation,
-      ].filter((location) => location !== undefined),
+      mergeLocationsWithCurrentUserLocation({
+        currentUserLocation:
+          saveUserLocationData?.saveUserLocation.userLocation,
+        locations: locationsData?.usersLocations.usersLocations,
+      }),
     [
-      data?.saveUserLocation?.userLocation,
-      locationsData?.usersLocations?.usersLocations,
+      locationsData?.usersLocations.usersLocations,
+      saveUserLocationData?.saveUserLocation.userLocation,
     ]
   )
+
   const { data: authData } = useAuthUser()
-  if (!authData) {
+  const authUser = authData?.authUser.user
+  if (!authUser) {
     throw new Error("User should be authenticated.")
   }
 
@@ -71,6 +69,9 @@ export function WorldMap() {
         <APIProvider apiKey={GOOGLE_MAPS_API_KEY}>
           <Map
             defaultCenter={{
+              /**
+               * @todo: make one time reset center, when user get his location
+               */
               lat: latitude ?? 50.3907625,
               lng: longitude ?? 30.635667999999995,
             }}
@@ -80,7 +81,7 @@ export function WorldMap() {
           {authData &&
             locations.map((ul) => (
               <UserMarker
-                authUser={authData.authUser.user}
+                authUser={authUser}
                 key={ul.id}
                 location={ul.location}
                 receiver={ul.user}
@@ -91,4 +92,23 @@ export function WorldMap() {
       </InvitationsProvider>
     </Box>
   )
+}
+
+function mergeLocationsWithCurrentUserLocation({
+  currentUserLocation,
+  locations = [],
+}: {
+  currentUserLocation?: UserLocationFragmentFragment
+  locations?: UserLocationFragmentFragment[]
+}) {
+  const mergedLocations = locations.map((location) => {
+    if (
+      currentUserLocation &&
+      location.user.id === currentUserLocation.user.id
+    ) {
+      return currentUserLocation
+    }
+    return location
+  })
+  return mergedLocations
 }
