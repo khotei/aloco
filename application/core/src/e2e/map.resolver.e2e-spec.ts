@@ -1,4 +1,4 @@
-import { deepEqual, ok } from "node:assert/strict"
+import { deepEqual, notDeepEqual, ok } from "node:assert/strict"
 import { afterEach, beforeEach, describe, it } from "node:test"
 
 import { faker } from "@faker-js/faker"
@@ -54,8 +54,9 @@ describe("MapResolver (e2e)", () => {
       app,
       token: auth.at(0).token,
     }).SaveUserLocation({ input: { location } })
-    const { id, ...rest } = created
+    const { id, updatedAt, ...rest } = created
     ok(id)
+    ok(updatedAt)
     deepEqual(rest, {
       location,
       user: auth.at(0).user,
@@ -71,7 +72,9 @@ describe("MapResolver (e2e)", () => {
       token: auth.at(0).token,
     }).SaveUserLocation({ input: { location } })
     const {
-      saveUserLocation: { userLocation: updated },
+      saveUserLocation: {
+        userLocation: { updatedAt, ...restUpdated },
+      },
     } = await apprequest({
       app,
       token: auth.at(0).token,
@@ -80,10 +83,47 @@ describe("MapResolver (e2e)", () => {
         location: updatedLocation,
       },
     })
-    deepEqual(updated, {
+    ok(updatedAt)
+    deepEqual(restUpdated, {
       id: created.id,
       location: updatedLocation,
       user: auth.at(0).user,
     })
+  })
+
+  it("should update updatedAt", async () => {
+    const [location, location2, location3] = fakeLocation
+    const {
+      saveUserLocation: {
+        userLocation: { updatedAt: createdUpdatedAt },
+      },
+    } = await apprequest({
+      app,
+      token: auth.at(0).token,
+    }).SaveUserLocation({ input: { location } })
+    const {
+      saveUserLocation: {
+        userLocation: { updatedAt: firstUpdateUpdatedAt },
+      },
+    } = await apprequest({
+      app,
+      token: auth.at(0).token,
+    }).SaveUserLocation({ input: { location: location2 } })
+    const {
+      saveUserLocation: {
+        userLocation: { updatedAt: secondUpdateUpdatedAt },
+      },
+    } = await apprequest({
+      app,
+      token: auth.at(0).token,
+    }).SaveUserLocation({ input: { location: location3 } })
+    notDeepEqual(
+      { updatedAt: createdUpdatedAt },
+      { updatedAt: firstUpdateUpdatedAt }
+    )
+    notDeepEqual(
+      { updatedAt: firstUpdateUpdatedAt },
+      { updatedAt: secondUpdateUpdatedAt }
+    )
   })
 })

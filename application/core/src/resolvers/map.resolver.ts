@@ -31,7 +31,7 @@ export class MapResolver {
 
   @Query(() => UsersLocationsResponse, { name: "usersLocations" })
   async find(): Promise<UsersLocationsResponse> {
-    const onlineMs = 5000
+    const onlineMs = 5_000
     const minUpdatedAt = new Date(new Date().getTime() - onlineMs)
     const usersLocations = await this.userLocationRepo.find({
       where: {
@@ -54,6 +54,7 @@ export class MapResolver {
       await this.userLocationRepo.save(
         this.userLocationRepo.merge(userLocation, {
           location: [input.location.lat, input.location.lng],
+          updatedAt: new Date(),
         })
       )
       return { userLocation }
