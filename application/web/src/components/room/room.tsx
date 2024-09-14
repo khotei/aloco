@@ -1,4 +1,4 @@
-import { Spinner } from "@chakra-ui/react"
+import { Box, Spinner } from "@chakra-ui/react"
 import {
   CallControls,
   type User as ChatUser,
@@ -14,6 +14,8 @@ import { useEffect, useMemo } from "react"
 import { useAuthUser } from "@/hooks/auth/use-auth-user"
 import { useCreateStreamToken } from "@/hooks/auth/use-create-stream-token"
 import { Route } from "@/routes/room.$roomId.lazy"
+
+import "./room.css"
 
 export function Room() {
   const auth = useAuthUser()
@@ -75,13 +77,15 @@ function Stream({
   }, [call])
 
   return (
-    <StreamVideo client={client}>
-      <StreamCall call={call}>
-        <StreamTheme>
-          <SpeakerLayout participantsBarPosition="bottom" />
-          <CallControls />
-        </StreamTheme>
-      </StreamCall>
-    </StreamVideo>
+    <Box h={"100vh"}>
+      <StreamVideo client={client}>
+        <StreamCall call={call}>
+          <StreamTheme>
+            <SpeakerLayout participantsBarPosition="bottom" />
+            <CallControls />
+          </StreamTheme>
+        </StreamCall>
+      </StreamVideo>
+    </Box>
   )
 }
