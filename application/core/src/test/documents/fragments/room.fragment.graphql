@@ -1,0 +1,3 @@
+fragment RoomFragment on Room {
+    id
+}

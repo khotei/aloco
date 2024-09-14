@@ -1,17 +1,17 @@
 subscription InvitationSent {
     invitationSent {
-        invitation {
-            id
-            sender {
-                id
+        ... on InvitationResponse {
+            invitation {
+                ...InvitationFragment
             }
-            receiver {
-                id
-            }
-            status
-            createdAt
-            updatedAt
         }
-
+        ... on AcceptedInvitationResponse {
+            invitation {
+                ...InvitationFragment
+            }
+            room {
+                ...RoomFragment
+            }
+        }
     }
 }

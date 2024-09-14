@@ -11,9 +11,10 @@ import {
   type AuthPayload,
 } from "@/authentication/decorators/auth.decorator"
 import { JwtAuthGuard } from "@/authentication/guards/jwt-auth.guard"
-import { InvitationResponse } from "@/dto/invitations/invitation-response.dto"
+import { InvitationResponseUnion } from "@/dto/invitations/invitation-response-union.dto"
 import { SendInvitationInput } from "@/dto/invitations/send-invitation-input.dto"
 import { Invitation, invitationStatus } from "@/entities/invitation.entity"
+import { Room } from "@/entities/room.entity"
 import { User } from "@/entities/user.entity"
 import {
   buildInvitationEvent,
@@ -32,12 +33,14 @@ export class InvitationsResolver {
   constructor(
     @InjectRepository(Invitation)
     private readonly invitationsRepo: Repository<Invitation>,
+    @InjectRepository(Room)
+    private readonly roomsRepo: Repository<Room>,
     @InjectRepository(User)
     private usersRepo: Repository<User>,
     private readonly pubSub: PubSub
   ) {}
   @UseGuards(JwtAuthGuard)
-  @Subscription(() => InvitationResponse, {
+  @Subscription(() => InvitationResponseUnion, {
     filter(invitationRes: InvitationSentEvent, _: void, context: any) {
       return [
         invitationRes.invitationSent.invitation.receiver.id,
@@ -47,13 +50,13 @@ export class InvitationsResolver {
     name: INVITATION_SENT_EVENT_KEY,
   })
   async emitInvitation() {
-    return this.pubSub.asyncIterator<InvitationResponse>(
+    return this.pubSub.asyncIterator<typeof InvitationResponseUnion>(
       INVITATION_SENT_EVENT_KEY
     )
   }
 
   @Process()
-  async processInvitationTimeout(job: Job<InvitationResponse>) {
+  async processInvitationTimeout(job: Job<typeof InvitationResponseUnion>) {
     const invitation = await this.invitationsRepo.findOneByOrFail({
       id: job.data.invitation.id,
     })
@@ -72,11 +75,11 @@ export class InvitationsResolver {
 
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(InvitationSentInterceptor, InvitationTimeoutInterceptor)
-  @Mutation(() => InvitationResponse, { name: "sendInvitation" })
+  @Mutation(() => InvitationResponseUnion, { name: "sendInvitation" })
   async save(
     @Auth() auth: AuthPayload,
     @Args("sendInvitationInput") input: SendInvitationInput
-  ): Promise<InvitationResponse> {
+  ): Promise<typeof InvitationResponseUnion> {
     const user = await this.usersRepo.findOneByOrFail({ id: auth.userId })
     if (input.id) {
       const invitation = await this.invitationsRepo.findOneOrFail({
@@ -94,6 +97,12 @@ export class InvitationsResolver {
       await this.invitationsRepo.save(
         this.invitationsRepo.merge(invitation, input)
       )
+
+      if (invitation.status === invitationStatus.ACCEPTED) {
+        const room = await this.roomsRepo.save(this.roomsRepo.create())
+        return { invitation, room }
+      }
+
       return { invitation }
     } else {
       const receiver = await this.usersRepo.findOneByOrFail({

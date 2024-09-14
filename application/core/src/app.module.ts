@@ -16,6 +16,7 @@ import { PubSub } from "graphql-subscriptions"
 
 import { JwtStrategy } from "@/authentication/strategies/jwt.strategy"
 import { Invitation } from "@/entities/invitation.entity"
+import { Room } from "@/entities/room.entity"
 import { UserLocation } from "@/entities/user-location.entity"
 import { User } from "@/entities/user.entity"
 import { INVITATION_TIMEOUT_QUEUE_KEY } from "@/interceptors/invitation-timeout-interceptor"
@@ -35,7 +36,7 @@ import { MapResolver } from "@/resolvers/map.resolver"
       type: "postgres",
       username: "test",
     }),
-    TypeOrmModule.forFeature([User, UserLocation, Invitation]),
+    TypeOrmModule.forFeature([User, UserLocation, Invitation, Room]),
     BullModule.forRoot({
       redis: {
         host: "localhost",

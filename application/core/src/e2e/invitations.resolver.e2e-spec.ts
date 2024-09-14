@@ -255,7 +255,11 @@ describe("InvitationsResolver (e2e)", () => {
       status: InvitationStatus.Accepted,
     }
     const {
-      sendInvitation: { invitation: accepted },
+      /**
+       * @todo: fix typings
+       */
+      // @ts-expect-error fuck TS
+      sendInvitation: { invitation: accepted, room: acceptedRoom },
     } = await apprequest({
       app,
       token: authReceiver.token,
@@ -265,11 +269,19 @@ describe("InvitationsResolver (e2e)", () => {
     const {
       value: {
         data: {
-          invitationSent: { invitation: acceptedEmmitted },
+          invitationSent: {
+            invitation: acceptedEmitted,
+            /**
+             * @todo: fix typing
+             */
+            room: acceptedEmittedRoom,
+          },
         },
       },
     } = await receiverSub.next()
-    deepEqual(acceptedEmmitted, accepted)
+    deepEqual(acceptedEmitted, accepted)
+    ok(acceptedRoom?.id)
+    ok(acceptedEmittedRoom?.id)
     await receiverSub.return()
   })
 

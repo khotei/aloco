@@ -8,11 +8,11 @@ import { PubSub } from "graphql-subscriptions"
 import { Observable } from "rxjs"
 import { tap } from "rxjs/operators"
 
-import type { InvitationResponse } from "@/__generated__/scheme.generated"
-import { InvitationResponse as GqlInvitationResponse } from "@/dto/invitations/invitation-response.dto"
+// import type { Invitation as GqlInvitationResponse } from "@/__generated__/scheme.generated"
+import type { InvitationResponseUnion } from "@/dto/invitations/invitation-response-union.dto"
 
 export type InvitationSentEvent = {
-  invitationSent: GqlInvitationResponse | InvitationResponse
+  invitationSent: typeof InvitationResponseUnion
 }
 
 export const INVITATION_SENT_EVENT_KEY = "invitationSent"
@@ -23,7 +23,7 @@ export class InvitationSentInterceptor implements NestInterceptor {
 
   intercept(_: ExecutionContext, next: CallHandler): Observable<any> {
     return next.handle().pipe(
-      tap(async (invitationRes: InvitationResponse) => {
+      tap(async (invitationRes: typeof InvitationResponseUnion) => {
         await this.pubSub.publish(
           INVITATION_SENT_EVENT_KEY,
           buildInvitationEvent(invitationRes)
@@ -34,7 +34,7 @@ export class InvitationSentInterceptor implements NestInterceptor {
 }
 
 export function buildInvitationEvent(
-  invitationRes: GqlInvitationResponse | InvitationResponse
+  invitationRes: typeof InvitationResponseUnion
 ): InvitationSentEvent {
   return {
     [INVITATION_SENT_EVENT_KEY]: invitationRes,

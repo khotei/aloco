@@ -1,6 +1,5 @@
 import { AlertStatus } from "@chakra-ui/alert"
 import { type ToastId, type UseToastOptions } from "@chakra-ui/react"
-import { useNavigate } from "@tanstack/react-router"
 import { useEffect, useMemo, useState } from "react"
 
 import {
@@ -63,16 +62,14 @@ export function Invitation({
   }, [invitation, lastInvitation.status, toastId, toastProps])
 
   const { removeInvitation } = useInvitations()
-  const navigate = useNavigate()
+  /**
+   * @todo: try to replace with useTimeout
+   */
   useEffect(() => {
     const timeout =
       // pending 10000 timeout + 4000 info message (timeout)
       invitation.status === InvitationStatus.Pending ? 14000 : 4000
     const timeoutId = setTimeout(() => {
-      if (invitation.status === InvitationStatus.Accepted) {
-        navigate({ to: "/room/10" })
-      }
-
       if (toastId) {
         toast.close(toastId)
       }
@@ -81,7 +78,7 @@ export function Invitation({
     return () => {
       clearTimeout(timeoutId)
     }
-  }, [invitation, navigate, removeInvitation, toastId])
+  }, [invitation, removeInvitation, toastId])
 
   return null
 }

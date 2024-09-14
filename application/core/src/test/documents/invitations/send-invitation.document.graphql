@@ -1,16 +1,17 @@
 mutation SendInvitation($input: SendInvitationInput!) {
     sendInvitation(sendInvitationInput: $input) {
-        invitation {
-            id
-            sender {
-                id
+        ... on InvitationResponse {
+            invitation {
+                ...InvitationFragment
             }
-            receiver {
-                id
+        }
+        ... on AcceptedInvitationResponse {
+            invitation {
+                ...InvitationFragment
             }
-            status
-            createdAt
-            updatedAt
+            room {
+                ...RoomFragment
+            }
         }
     }
 }
