@@ -4,17 +4,20 @@
   "workspaces": [
     "application/**"
   ],
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "turbo run dev",
+    "start": "turbo run start",
+    "build": "turbo run build",
     "lint": "turbo run lint",
     "tscheck": "turbo run tscheck",
     "codegen": "turbo run codegen",
-    "clean": "turbo run clean",
-    "prepare": "husky"
+    "clean": "turbo run clean"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.4.4",
-    "husky": "^9.1.4",
     "turbo": "^2.0.12"
   },
   "packageManager": ">=npm@10.0.0"

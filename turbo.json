@@ -13,6 +13,16 @@
       "persistent": true,
       "cache": false,
       "dependsOn": ["codegen"]
+    },
+    "start": {
+      "dependsOn": ["build"],
+      "persistent": true,
+      "cache": false
+    },
+    "build": {
+      "persistent": true,
+      "cache": false,
+      "dependsOn": ["codegen"]
     }
   }
 }

@@ -1,4 +1,5 @@
 import { join } from "node:path"
+import * as process from "node:process"
 
 import {
   ApolloDriver,
@@ -24,22 +25,27 @@ import { AuthenticationResolver } from "@/resolvers/authentication.resolver"
 import { InvitationsResolver } from "@/resolvers/invitations.resolver"
 import { MapResolver } from "@/resolvers/map.resolver"
 
+console.log(process.env)
+
 @Module({
   imports: [
     TypeOrmModule.forRoot({
       autoLoadEntities: true,
-      database: "test",
-      host: "localhost",
-      password: "test",
-      port: 5432,
+      ssl:
+        process.env.NODE_ENV === "production"
+          ? {
+              ca: process.env.PG_CERT,
+              rejectUnauthorized: false,
+            }
+          : undefined,
       synchronize: true,
       type: "postgres",
-      username: "test",
+      url: process.env.PG_URL ?? "postgres://test:test@localhost:5432/test",
     }),
     TypeOrmModule.forFeature([User, UserLocation, Invitation, Room]),
     BullModule.forRoot({
       redis: {
-        host: "localhost",
+        host: process.env.REDIS_HOST ?? "localhost",
       },
     }),
     BullModule.registerQueue({
