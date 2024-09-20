@@ -9,7 +9,7 @@ import { Queue } from "bull"
 import { Observable } from "rxjs"
 import { tap } from "rxjs/operators"
 
-import type { InvitationResponse } from "@/__generated__/scheme.generated"
+import type { InvitationResponse } from "@/dto/invitations/invitation-response.dto"
 
 export type InvitationSentEvent = {
   invitationSent: InvitationResponse

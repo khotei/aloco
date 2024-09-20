@@ -1,17 +1,27 @@
 {
+  "globalEnv": ["PG_URL", "PG_CERT", "REDIS_HOST", "NODE_PORT", "NODE_ENV"],
   "tasks": {
     "lint": {},
     "tscheck": {},
     "clean": {},
-    "codegen": {
-      "cache": false
-    },
+    "codegen": {},
     "web#codegen": {
-      "dependsOn": ["core#codegen"]
+      "dependsOn": ["core#codegen"],
+      "inputs": ["./application/web/src/codegen/**"]
+    },
+    "core#codegen": {
+      "inputs": ["./application/core/src/**"]
     },
     "dev": {
-      "persistent": true,
       "cache": false,
+      "dependsOn": ["codegen"]
+    },
+    "start": {
+      "dependsOn": ["build"],
+      "cache": false
+    },
+    "build": {
+      "outputs": ["**/dist/**"],
       "dependsOn": ["codegen"]
     }
   }

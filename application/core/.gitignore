@@ -1,5 +1,4 @@
-schema.graphql
-scheme.generated.ts
+__generated__
 
 # compiled output
 /dist
