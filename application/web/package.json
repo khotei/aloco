@@ -11,7 +11,7 @@
     "tscheck": "tsc -p tsconfig.app.json",
     "lint": "eslint --fix",
     "preview": "vite preview",
-    "clean": "rm -r node_modules && rm -r .turbo && rm -r dist && rm -r ./src/codegen/__generated__"
+    "clean": "rm -rf node_modules && rm -rf .turbo && rm -rf dist && rm -rf ./src/codegen/__generated__"
   },
   "dependencies": {
     "@apollo/client": "^3.11.4",

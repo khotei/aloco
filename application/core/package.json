@@ -16,7 +16,7 @@
     "lint": "eslint --fix",
     "test": "node -r ts-node/register --test src/**/*.spec.ts",
     "test:e2e": "node -r ts-node/register --test src/**/*.e2e-spec.ts",
-    "clean": "rm -r node_modules && rm -r .turbo && rm -r dist && rm -r ./src/__generated__"
+    "clean": "rm -rf node_modules && rm -rf .turbo && rm -rf dist && rm -rf ./src/__generated__"
   },
   "dependencies": {
     "@nestjs/apollo": "^12.2.0",

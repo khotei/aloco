@@ -15,6 +15,9 @@ import { User } from "@/entities/user.entity"
 @Entity()
 @ObjectType()
 export class UserLocation {
+  @Column({
+    type: "json",
+  })
   @CreateDateColumn({ type: "timestamptz" })
   @Field()
   createdAt: Date
@@ -23,9 +26,6 @@ export class UserLocation {
   @Field(() => ID)
   id: number
 
-  @Column({
-    type: "json",
-  })
   @Transform(({ value }) => {
     if (Array.isArray(value) && value.length === 2) {
       const [lat, lng] = value

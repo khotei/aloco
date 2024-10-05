@@ -1,28 +1,34 @@
 {
   "globalEnv": ["PG_URL", "PG_CERT", "REDIS_HOST", "NODE_PORT", "NODE_ENV"],
   "tasks": {
-    "lint": {},
-    "tscheck": {},
-    "clean": {},
-    "codegen": {},
-    "web#codegen": {
-      "dependsOn": ["core#codegen"],
-      "inputs": ["./application/web/src/codegen/**"]
-    },
-    "core#codegen": {
-      "inputs": ["./application/core/src/**"]
-    },
-    "dev": {
-      "cache": false,
-      "dependsOn": ["codegen"]
-    },
     "start": {
       "dependsOn": ["build"],
       "cache": false
     },
+    "dev": {
+      "dependsOn": ["codegen"],
+      "cache": false
+    },
     "build": {
-      "outputs": ["**/dist/**"],
-      "dependsOn": ["codegen"]
+      "dependsOn": ["codegen"],
+      "outputs": ["dist/**"]
+    },
+    "codegen": {},
+    "web#codegen": {
+      "dependsOn": ["core#codegen"],
+      "inputs": ["src/codegen/**"]
+    },
+    "core#codegen": {
+      "inputs": ["src/**"]
+    },
+    "lint": {
+      "inputs": ["src/**", "eslint.config.js"]
+    },
+    "tscheck": {
+      "inputs": ["src/**", "tsconfig.json"]
+    },
+    "clean": {
+      "cache": false
     }
   }
 }
