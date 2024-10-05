@@ -4,7 +4,7 @@ import { NestFactory } from "@nestjs/core"
 import { AppModule } from "@/app.module"
 
 async function bootstrap() {
-  // @todo: avoid connecting typeorm to pg
+  process.env.CODE_GEN = "true"
   const app = await NestFactory.create(AppModule)
   await app.init()
   await generate(

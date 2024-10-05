@@ -1,5 +1,4 @@
 import { join } from "node:path"
-import * as process from "node:process"
 
 import {
   ApolloDriver,
@@ -25,12 +24,11 @@ import { AuthenticationResolver } from "@/resolvers/authentication.resolver"
 import { InvitationsResolver } from "@/resolvers/invitations.resolver"
 import { MapResolver } from "@/resolvers/map.resolver"
 
-console.log(process.env)
-
 @Module({
   imports: [
     TypeOrmModule.forRoot({
       autoLoadEntities: true,
+      manualInitialization: Boolean(process.env.CODE_GEN),
       ssl:
         process.env.NODE_ENV === "production"
           ? {
