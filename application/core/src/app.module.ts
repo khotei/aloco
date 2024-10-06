@@ -1,4 +1,5 @@
 import { join } from "node:path"
+import * as process from "node:process"
 
 import {
   ApolloDriver,
@@ -7,6 +8,7 @@ import {
 } from "@nestjs/apollo"
 import { BullModule } from "@nestjs/bull"
 import { Module, ValidationPipe } from "@nestjs/common"
+import { ConfigModule } from "@nestjs/config"
 import { APP_PIPE } from "@nestjs/core"
 import { GraphQLModule } from "@nestjs/graphql"
 import { JwtModule } from "@nestjs/jwt"
@@ -15,6 +17,12 @@ import { TypeOrmModule } from "@nestjs/typeorm"
 import { PubSub } from "graphql-subscriptions"
 
 import { JwtStrategy } from "@/authentication/strategies/jwt.strategy"
+import {
+  type ServicesConfig,
+  servicesConfigs,
+  type SystemConfigs,
+  systemConfigs,
+} from "@/configs/environments"
 import { Invitation } from "@/entities/invitation.entity"
 import { Room } from "@/entities/room.entity"
 import { UserLocation } from "@/entities/user-location.entity"
@@ -26,25 +34,42 @@ import { MapResolver } from "@/resolvers/map.resolver"
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      autoLoadEntities: true,
-      manualInitialization: Boolean(process.env.CODE_GEN),
-      ssl:
-        process.env.NODE_ENV === "production"
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [systemConfigs, servicesConfigs],
+    }),
+    TypeOrmModule.forRootAsync({
+      inject: [systemConfigs.KEY, servicesConfigs.KEY],
+      useFactory: (
+        systemConfigs: SystemConfigs,
+        servicesConfig: ServicesConfig
+      ) => ({
+        autoLoadEntities: true,
+        manualInitialization: systemConfigs.codeGen,
+        ssl: servicesConfig.pgCert
           ? {
-              ca: process.env.PG_CERT,
-              rejectUnauthorized: false,
+              ca: servicesConfig.pgCert,
+              rejectUnauthorized: true,
             }
           : undefined,
-      synchronize: true,
-      type: "postgres",
-      url: process.env.PG_URL ?? "postgres://test:test@localhost:5432/test",
+        synchronize: true,
+        type: "postgres",
+        url: servicesConfig.pgUrl,
+      }),
     }),
     TypeOrmModule.forFeature([User, UserLocation, Invitation, Room]),
-    BullModule.forRoot({
-      redis: {
-        host: process.env.REDIS_HOST ?? "localhost",
-      },
+    BullModule.forRootAsync({
+      inject: [systemConfigs.KEY, servicesConfigs.KEY],
+      useFactory: (
+        systemConfigs: SystemConfigs,
+        servicesConfig: ServicesConfig
+      ) => ({
+        redis: systemConfigs.codeGen
+          ? {}
+          : {
+              host: servicesConfig.redisUrl,
+            },
+      }),
     }),
     BullModule.registerQueue({
       name: INVITATION_TIMEOUT_QUEUE_KEY,

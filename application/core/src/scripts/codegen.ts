@@ -3,8 +3,9 @@ import { NestFactory } from "@nestjs/core"
 
 import { AppModule } from "@/app.module"
 
+process.env.CODE_GEN = "true"
+
 async function bootstrap() {
-  process.env.CODE_GEN = "true"
   const app = await NestFactory.create(AppModule)
   await app.init()
   await generate(

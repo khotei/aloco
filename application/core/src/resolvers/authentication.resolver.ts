@@ -1,4 +1,4 @@
-import { UseGuards } from "@nestjs/common"
+import { Inject, UseGuards } from "@nestjs/common"
 import { Mutation, Query, Resolver } from "@nestjs/graphql"
 import { JwtService } from "@nestjs/jwt"
 import { InjectRepository } from "@nestjs/typeorm"
@@ -13,6 +13,7 @@ import { AuthResponse } from "@/authentication/dto/auth.dto"
 import { TokenResponse } from "@/authentication/dto/token-response.dto"
 import { JwtAuthGuard } from "@/authentication/guards/jwt-auth.guard"
 import type { JwtPayload } from "@/authentication/strategies/jwt.strategy"
+import { type ServicesConfig, servicesConfigs } from "@/configs/environments"
 import { User } from "@/entities/user.entity"
 
 @Resolver()
@@ -20,7 +21,9 @@ export class AuthenticationResolver {
   constructor(
     @InjectRepository(User)
     private readonly usersRepo: Repository<User>,
-    private readonly jwtService: JwtService
+    private readonly jwtService: JwtService,
+    @Inject(servicesConfigs.KEY)
+    private readonly config: ServicesConfig
   ) {}
   @UseGuards(JwtAuthGuard)
   @Mutation(() => TokenResponse, { name: "createStreamToken" })
@@ -29,8 +32,8 @@ export class AuthenticationResolver {
      * @todo: improve. move to the service or separate resolver
      */
     const client = new StreamClient(
-      "nkz32n9y386u",
-      "xkh7qyb2agqw8b3usbx6357jgkvjvs8by43d5ngqfevckg4bhrq42hpf8mv8tms5"
+      this.config.getStreamApiKey,
+      this.config.getStreamApiSecret
     )
     const token = client.generateUserToken({ user_id: auth.userId.toString() })
     return { token }

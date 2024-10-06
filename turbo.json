@@ -1,13 +1,27 @@
 {
-  "globalEnv": ["PG_URL", "PG_CERT", "REDIS_HOST", "NODE_PORT", "NODE_ENV"],
+  "globalEnv": [
+    "PG_URL",
+    "PG_CERT",
+    "REDIS_URL",
+    "NODE_PORT",
+    "NODE_ENV",
+    "GET_STREAM_API_SECRET",
+    "GET_STREAM_API_KEY",
+    "VITE_CORE_API_URL"
+  ],
   "tasks": {
     "start": {
       "dependsOn": ["build"],
+      "cache": false,
+      "persistent": true
+    },
+    "start:prod": {
       "cache": false
     },
     "dev": {
       "dependsOn": ["codegen"],
-      "cache": false
+      "cache": false,
+      "persistent": true
     },
     "build": {
       "dependsOn": ["codegen"],
@@ -16,10 +30,12 @@
     "codegen": {},
     "web#codegen": {
       "dependsOn": ["core#codegen"],
-      "inputs": ["src/codegen/**"]
+      "inputs": ["src/codegen/**"],
+      "outputs": ["src/codegen/__generated__/**"]
     },
     "core#codegen": {
-      "inputs": ["src/**"]
+      "inputs": ["src/**"],
+      "outputs": ["src/__generated__/**"]
     },
     "lint": {
       "inputs": ["src/**", "eslint.config.js"]
