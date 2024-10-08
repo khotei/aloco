@@ -26,6 +26,7 @@ export class UserLocation {
   @Field(() => ID)
   id: number
 
+  @Column({ type: "json" })
   @Transform(({ value }) => {
     if (Array.isArray(value) && value.length === 2) {
       const [lat, lng] = value
