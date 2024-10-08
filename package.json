@@ -13,6 +13,7 @@
     "start:prod": "turbo run start:prod",
     "build": "turbo run build",
     "build:do:core": "npm install --production=false && npm run build -- --filter=core",
+    "build:do:web": "npm install --production=false && npm run build -- --filter=web",
     "lint": "turbo run lint",
     "tscheck": "turbo run tscheck",
     "codegen": "turbo run codegen",
