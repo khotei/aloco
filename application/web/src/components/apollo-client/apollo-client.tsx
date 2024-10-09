@@ -34,7 +34,7 @@ export function ApolloClientProvider({
           connectionParams: {
             ...(token ? { Authorization: `Bearer ${token}` } : undefined),
           },
-          url: "ws://localhost:4000/graphql",
+          url: `${import.meta.env.VITE_CORE_API_URL}/graphql`,
         })
       ),
     [token]
