@@ -17,7 +17,7 @@ export function App() {
           <ApolloClientProvider token={token}>
             <Suspense fallback={<Spinner />}>
               <AuthInitializer />
-              <RouterProvider router={router} />
+              {token ? <RouterProvider router={router} /> : null}
             </Suspense>
           </ApolloClientProvider>
         )}
