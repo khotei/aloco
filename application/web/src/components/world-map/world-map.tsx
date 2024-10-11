@@ -1,65 +1,23 @@
 import { Box } from "@chakra-ui/react"
 import { useGeolocation } from "@uidotdev/usehooks"
 import { APIProvider, Map } from "@vis.gl/react-google-maps"
-import { useEffect, useMemo } from "react"
+import { useCallback, useEffect, useMemo } from "react"
 
+import type { UserLocationFragmentFragment } from "@/codegen/__generated__/gql/graphql"
 import { Invitations } from "@/components/invitations"
 import { InvitationsProvider } from "@/components/invitations-provider"
 import { UserMarker } from "@/components/world-map/user-marker"
-import { useAuthUser } from "@/hooks/auth/use-auth-user"
+import { useRequireAuthUser } from "@/hooks/auth/use-auth-user"
 import { useSaveUserLocation } from "@/hooks/map/use-save-user-location"
 import { useUsersLocations } from "@/hooks/map/use-users-locations"
 
 export function WorldMap() {
-  const { data: authData } = useAuthUser()
-  const authUser = authData?.authUser.user
-  if (!authUser) {
-    throw new Error("User should be authenticated.")
-  }
-
-  const location = useLocation()
-  const [saveLocation, { data: saveUserLocationData }] = useSaveUserLocation()
-  useEffect(() => {
-    save()
-    const intervalId = setInterval(save, 4_000)
-
-    function save() {
-      if (location) {
-        saveLocation({
-          variables: {
-            input: {
-              location,
-            },
-          },
-        })
-      }
-    }
-    return () => {
-      clearInterval(intervalId)
-    }
-  }, [location, saveLocation])
-
-  const { data: locationsData } = useUsersLocations({
-    pollInterval: 5000,
+  const { userLocation } = useUserLocation()
+  const locations = useActiveLocations({
+    currentUserLocation: userLocation,
   })
-  const locations = useMemo(
-    () =>
-      (
-        locationsData?.usersLocations.usersLocations.filter(
-          (location) =>
-            location.user.id ===
-            saveUserLocationData?.saveUserLocation.userLocation.user.id
-        ) ?? []
-      ).concat(
-        saveUserLocationData?.saveUserLocation.userLocation
-          ? [saveUserLocationData?.saveUserLocation.userLocation]
-          : []
-      ),
-    [
-      locationsData?.usersLocations.usersLocations,
-      saveUserLocationData?.saveUserLocation.userLocation,
-    ]
-  )
+
+  const { authUser } = useRequireAuthUser()
 
   return (
     <Box h={"100vh"}>
@@ -70,16 +28,16 @@ export function WorldMap() {
               /**
                * @todo: make one time reset center, when user get his location
                */
-              lat: location?.lat ?? 50.3907625,
-              lng: location?.lng ?? 30.635667999999995,
+              lat: userLocation?.location.lat ?? 50.3907625,
+              lng: userLocation?.location.lng ?? 30.635667999999995,
             }}
             defaultZoom={14}
             mapId={"worldMap"}
           />
-          {authData &&
+          {authUser &&
             locations.map((ul) => (
               <UserMarker
-                authUser={authUser}
+                currentUser={authUser.id === ul.user.id}
                 key={ul.id}
                 location={ul.location}
                 receiver={ul.user}
@@ -92,7 +50,27 @@ export function WorldMap() {
   )
 }
 
-function useLocation() {
+function useActiveLocations({
+  currentUserLocation,
+}: {
+  currentUserLocation: null | undefined | UserLocationFragmentFragment
+}) {
+  const { data: locationsData } = useUsersLocations({
+    pollInterval: 5000,
+  })
+  const locations = useMemo(
+    () =>
+      (
+        locationsData?.usersLocations.usersLocations.filter(
+          (location) => location.user.id === currentUserLocation?.user.id
+        ) ?? []
+      ).concat(currentUserLocation ? [currentUserLocation] : []),
+    [locationsData?.usersLocations.usersLocations, currentUserLocation]
+  )
+  return locations
+}
+
+function useUserLocation() {
   /**
    * @todo: notify user about error
    */
@@ -107,5 +85,25 @@ function useLocation() {
         : { lat: geo.latitude, lng: geo.longitude },
     [geo.latitude, geo.longitude]
   )
-  return location
+  const [saveLocation, { data: saveUserLocationData }] = useSaveUserLocation()
+  const saveUserLocation = useCallback(async () => {
+    if (location) {
+      await saveLocation({
+        variables: {
+          input: {
+            location,
+          },
+        },
+      })
+    }
+  }, [location, saveLocation])
+  useEffect(() => {
+    saveUserLocation()
+    const intervalId = setInterval(saveUserLocation, 4_000)
+
+    return () => {
+      clearInterval(intervalId)
+    }
+  }, [location, saveUserLocation])
+  return { userLocation: saveUserLocationData?.saveUserLocation.userLocation }
 }

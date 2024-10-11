@@ -287,7 +287,7 @@ describe("InvitationsResolver (e2e)", () => {
 
   it("should not emit invitation when listener is not receiver or sender", async () => {
     const authListener = auth.at(3)
-    const { sub: alientSub } = await appsubscribe({
+    const { sub: alienSub } = await appsubscribe({
       app,
       query: InvitationSentDocument.loc.source.body,
       token: authListener.token,
@@ -307,11 +307,11 @@ describe("InvitationsResolver (e2e)", () => {
 
     const timeoutPromise = new Promise((resolve) => setTimeout(resolve, 1000))
     let received = false
-    alientSub.next().then(() => {
+    alienSub.next().then(() => {
       received = true
     })
     await timeoutPromise
     equal(received, false)
-    await alientSub.return()
+    await alienSub.return()
   })
 })

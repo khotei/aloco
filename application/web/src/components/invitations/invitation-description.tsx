@@ -1,11 +1,11 @@
 import { Box, Button, Flex, Text } from "@chakra-ui/react"
-import type { UserFragmentFragment } from "core/dist/__generated__/scheme.generated"
 import { useCallback, useState } from "react"
 
 import {
   type InvitationFragmentFragment,
   InvitationStatus,
   type SendInvitationInput,
+  type UserFragmentFragment,
 } from "@/codegen/__generated__/gql/graphql"
 
 export function InvitationDescription({

@@ -11,24 +11,20 @@ import {
 import "@stream-io/video-react-sdk/dist/css/styles.css"
 import { useEffect, useMemo } from "react"
 
-import { useAuthUser } from "@/hooks/auth/use-auth-user"
+import { useRequireAuthUser } from "@/hooks/auth/use-auth-user"
 import { useCreateStreamToken } from "@/hooks/auth/use-create-stream-token"
 import { Route } from "@/routes/room.$roomId.lazy"
 
 import "./room.css"
 
 export function Room() {
-  const auth = useAuthUser()
-  const user = auth.data?.authUser.user
-  if (!user) {
-    throw new Error("User should be authenticated.")
-  }
+  const { authUser } = useRequireAuthUser()
   const chatUser: ChatUser = useMemo(
     () => ({
-      id: user.id,
+      id: authUser.id,
       name: "Guest",
     }),
-    [user]
+    [authUser.id]
   )
 
   const [createStreamToken, { data, loading }] = useCreateStreamToken()

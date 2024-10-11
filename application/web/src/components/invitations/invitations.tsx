@@ -25,9 +25,6 @@ export function Invitations() {
     },
   })
   /**
-   * @todo: try to replace with useTimeout
-   */
-  /**
    * @todo: try to move this logic to the Invitation component
    */
   const navigate = useNavigate()

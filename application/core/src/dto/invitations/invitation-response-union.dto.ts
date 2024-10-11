@@ -3,7 +3,7 @@ import { createUnionType } from "@nestjs/graphql"
 import { AcceptedInvitationResponse } from "@/dto/invitations/accepted-invitation-response.dto"
 import { InvitationResponse } from "@/dto/invitations/invitation-response.dto"
 
-export const InvitationResponseUnion = createUnionType({
+export const invitationResponseUnion = createUnionType({
   name: "InvitationResponseUnion",
   resolveType: (value) => {
     if ("room" in value) {
@@ -13,3 +13,4 @@ export const InvitationResponseUnion = createUnionType({
   },
   types: () => [InvitationResponse, AcceptedInvitationResponse] as const,
 })
+export type InvitationResponseUnion = typeof invitationResponseUnion

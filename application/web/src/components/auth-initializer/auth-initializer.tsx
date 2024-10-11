@@ -9,7 +9,6 @@ export function AuthInitializer() {
 
   const [token, setToken] = useToken()
   const [register, { data: registerData }] = useRegisterTemporalUser()
-
   useEffect(() => {
     if (!token) {
       register()

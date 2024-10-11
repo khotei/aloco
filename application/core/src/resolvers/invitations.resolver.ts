@@ -11,7 +11,10 @@ import {
   type AuthPayload,
 } from "@/authentication/decorators/auth.decorator"
 import { JwtAuthGuard } from "@/authentication/guards/jwt-auth.guard"
-import { InvitationResponseUnion } from "@/dto/invitations/invitation-response-union.dto"
+import {
+  type InvitationResponseUnion,
+  invitationResponseUnion,
+} from "@/dto/invitations/invitation-response-union.dto"
 import { SendInvitationInput } from "@/dto/invitations/send-invitation-input.dto"
 import { Invitation, invitationStatus } from "@/entities/invitation.entity"
 import { Room } from "@/entities/room.entity"
@@ -19,13 +22,10 @@ import { User } from "@/entities/user.entity"
 import {
   buildInvitationEvent,
   INVITATION_SENT_EVENT_KEY,
-  type InvitationSentEvent,
+  INVITATION_TIMEOUT_QUEUE_KEY,
+  type InvitationSentEventPayload,
   InvitationSentInterceptor,
 } from "@/interceptors/invitation-sent-interceptor"
-import {
-  INVITATION_TIMEOUT_QUEUE_KEY,
-  InvitationTimeoutInterceptor,
-} from "@/interceptors/invitation-timeout-interceptor"
 
 @Processor(INVITATION_TIMEOUT_QUEUE_KEY)
 @Resolver()
@@ -40,8 +40,8 @@ export class InvitationsResolver {
     private readonly pubSub: PubSub
   ) {}
   @UseGuards(JwtAuthGuard)
-  @Subscription(() => InvitationResponseUnion, {
-    filter(invitationRes: InvitationSentEvent, _: void, context: any) {
+  @Subscription(() => invitationResponseUnion, {
+    filter(invitationRes: InvitationSentEventPayload, _: void, context: any) {
       return [
         invitationRes.invitationSent.invitation.receiver.id,
         invitationRes.invitationSent.invitation.sender.id,
@@ -50,16 +50,23 @@ export class InvitationsResolver {
     name: INVITATION_SENT_EVENT_KEY,
   })
   async emitInvitation() {
-    return this.pubSub.asyncIterator<typeof InvitationResponseUnion>(
+    return this.pubSub.asyncIterator<InvitationResponseUnion>(
       INVITATION_SENT_EVENT_KEY
     )
   }
 
   @Process()
-  async processInvitationTimeout(job: Job<typeof InvitationResponseUnion>) {
+  async processInvitationTimeout(job: Job<InvitationResponseUnion>) {
     const invitation = await this.invitationsRepo.findOneByOrFail({
       id: job.data.invitation.id,
     })
+    /**
+     * @todo: remove for queue when invitation change status, from pending to any other.
+     * if updated invitation has not pending state then remove it from queue.
+     *
+     * so you don't need to check status.
+     * and you will not process unnecessary work.
+     */
     if (invitation.status === invitationStatus.PENDING) {
       await this.invitationsRepo.save(
         this.invitationsRepo.merge(invitation, {
@@ -74,14 +81,17 @@ export class InvitationsResolver {
   }
 
   @UseGuards(JwtAuthGuard)
-  @UseInterceptors(InvitationSentInterceptor, InvitationTimeoutInterceptor)
-  @Mutation(() => InvitationResponseUnion, { name: "sendInvitation" })
+  @UseInterceptors(InvitationSentInterceptor)
+  @Mutation(() => invitationResponseUnion, { name: "sendInvitation" })
   async save(
     @Auth() auth: AuthPayload,
     @Args("sendInvitationInput") input: SendInvitationInput
-  ): Promise<typeof InvitationResponseUnion> {
+  ): Promise<InvitationResponseUnion> {
     const user = await this.usersRepo.findOneByOrFail({ id: auth.userId })
     if (input.id) {
+      /**
+       * @todo: allow to update invitation when it is only in pending state.
+       */
       const invitation = await this.invitationsRepo.findOneOrFail({
         where: [
           {
@@ -102,7 +112,6 @@ export class InvitationsResolver {
         const room = await this.roomsRepo.save(this.roomsRepo.create())
         return { invitation, room }
       }
-
       return { invitation }
     } else {
       const receiver = await this.usersRepo.findOneByOrFail({

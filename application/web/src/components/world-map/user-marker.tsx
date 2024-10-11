@@ -16,11 +16,11 @@ import { useInvitations } from "@/components/invitations-provider"
 
 export const UserMarker = memo(
   function UserMarker({
-    authUser,
+    currentUser,
     location,
     receiver,
   }: {
-    authUser: UserFragmentFragment
+    currentUser: boolean
     location: { lat: number; lng: number }
     receiver: UserFragmentFragment
   }) {
@@ -45,8 +45,6 @@ export const UserMarker = memo(
 
     const [markerRef, marker] = useAdvancedMarkerRef()
     const { isOpen, onClose, onOpen } = useDisclosure()
-
-    const currentUser = authUser.id === receiver.id
 
     return (
       <AdvancedMarker

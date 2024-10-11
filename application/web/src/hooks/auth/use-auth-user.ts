@@ -3,7 +3,7 @@ import { useQuery } from "@apollo/client"
 import { AuthUserDocument } from "@/codegen/__generated__/gql/graphql"
 import { useToken } from "@/components/token"
 
-export const useAuthUser = () => {
+export function useAuthUser() {
   const [token, setToken] = useToken()
   return useQuery(AuthUserDocument, {
     onError: () => {
@@ -19,4 +19,13 @@ export const useAuthUser = () => {
     },
     skip: !token,
   })
+}
+
+export function useRequireAuthUser() {
+  const { data: authData } = useAuthUser()
+  const authUser = authData?.authUser.user
+  if (!authUser) {
+    throw new Error("User should be authenticated.")
+  }
+  return { authUser }
 }

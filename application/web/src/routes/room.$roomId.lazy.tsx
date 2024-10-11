@@ -3,7 +3,11 @@ import { createLazyFileRoute } from "@tanstack/react-router"
 import { Room } from "@/components/room"
 
 function RoomPage() {
-  return <Room />
+  return (
+    <main>
+      <Room />
+    </main>
+  )
 }
 
 export const Route = createLazyFileRoute("/room/$roomId")({
