@@ -11,34 +11,48 @@ import { useAuthUser } from "@/hooks/auth/use-auth-user"
 import { useSaveUserLocation } from "@/hooks/map/use-save-user-location"
 import { useUsersLocations } from "@/hooks/map/use-users-locations"
 
-const GOOGLE_MAPS_API_KEY = "AIzaSyCUZf3em7J8q8WkWOfjJ1B9c5N1aKrDiVI"
-
 export function WorldMap() {
-  const { latitude, longitude } = useGeolocation({
+  const geo = useGeolocation({
     enableHighAccuracy: true,
     maximumAge: 5_000,
   })
+  const location = useMemo(
+    () =>
+      !geo.longitude || !geo.latitude
+        ? null
+        : { lat: geo.latitude, lng: geo.longitude },
+    [geo.latitude, geo.longitude]
+  )
+  const prevGeolocation = usePrevious(location)
+  console.log({ geo, prevGeolocation })
   const [saveLocation, { data: saveUserLocationData }] = useSaveUserLocation()
   const saveCurrentLocation = useCallback(() => {
-    if (latitude && longitude) {
+    if (location) {
       saveLocation({
         variables: {
           input: {
-            location: {
-              lat: latitude,
-              lng: longitude,
-            },
+            location,
           },
         },
       })
     }
-  }, [saveLocation, latitude, longitude])
-  const prevGeolocation = usePrevious({ latitude, longitude })
+  }, [location, saveLocation])
   useEffect(() => {
-    if (!prevGeolocation?.latitude && !prevGeolocation?.longitude) {
+    if (
+      !prevGeolocation?.lat &&
+      !prevGeolocation?.lng &&
+      location?.lat &&
+      location?.lng
+    ) {
       saveCurrentLocation()
     }
-  }, [prevGeolocation, saveCurrentLocation])
+  }, [
+    location?.lat,
+    location?.lng,
+    prevGeolocation?.lat,
+    prevGeolocation?.lng,
+    saveCurrentLocation,
+  ])
   useInterval(() => saveCurrentLocation(), 4000)
 
   const { data: locationsData } = useUsersLocations({
@@ -64,16 +78,16 @@ export function WorldMap() {
   }
 
   return (
-    <Box h={"calc(100vh - 40px)"}>
+    <Box h={"100vh"}>
       <InvitationsProvider>
-        <APIProvider apiKey={GOOGLE_MAPS_API_KEY}>
+        <APIProvider apiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}>
           <Map
             defaultCenter={{
               /**
                * @todo: make one time reset center, when user get his location
                */
-              lat: latitude ?? 50.3907625,
-              lng: longitude ?? 30.635667999999995,
+              lat: location?.lat ?? 50.3907625,
+              lng: location?.lng ?? 30.635667999999995,
             }}
             defaultZoom={14}
             mapId={"worldMap"}
