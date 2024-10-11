@@ -8,7 +8,6 @@ import { PubSub } from "graphql-subscriptions"
 import { Observable } from "rxjs"
 import { tap } from "rxjs/operators"
 
-// import type { Invitation as GqlInvitationResponse } from "@/__generated__/scheme.generated"
 import type { InvitationResponseUnion } from "@/dto/invitations/invitation-response-union.dto"
 
 export type InvitationSentEvent = {

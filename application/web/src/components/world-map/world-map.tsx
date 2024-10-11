@@ -1,9 +1,8 @@
-import { Box, useInterval, usePrevious } from "@chakra-ui/react"
+import { Box } from "@chakra-ui/react"
 import { useGeolocation } from "@uidotdev/usehooks"
 import { APIProvider, Map } from "@vis.gl/react-google-maps"
-import { useCallback, useEffect, useMemo } from "react"
+import { useEffect, useMemo } from "react"
 
-import type { UserLocationFragmentFragment } from "@/codegen/__generated__/gql/graphql"
 import { Invitations } from "@/components/invitations"
 import { InvitationsProvider } from "@/components/invitations-provider"
 import { UserMarker } from "@/components/world-map/user-marker"
@@ -12,70 +11,55 @@ import { useSaveUserLocation } from "@/hooks/map/use-save-user-location"
 import { useUsersLocations } from "@/hooks/map/use-users-locations"
 
 export function WorldMap() {
-  const geo = useGeolocation({
-    enableHighAccuracy: true,
-    maximumAge: 5_000,
-  })
-  const location = useMemo(
-    () =>
-      !geo.longitude || !geo.latitude
-        ? null
-        : { lat: geo.latitude, lng: geo.longitude },
-    [geo.latitude, geo.longitude]
-  )
-  const prevGeolocation = usePrevious(location)
-  console.log({ geo, prevGeolocation })
+  const { data: authData } = useAuthUser()
+  const authUser = authData?.authUser.user
+  if (!authUser) {
+    throw new Error("User should be authenticated.")
+  }
+
+  const location = useLocation()
   const [saveLocation, { data: saveUserLocationData }] = useSaveUserLocation()
-  const saveCurrentLocation = useCallback(() => {
-    if (location) {
-      saveLocation({
-        variables: {
-          input: {
-            location,
+  useEffect(() => {
+    save()
+    const intervalId = setInterval(save, 4_000)
+
+    function save() {
+      if (location) {
+        saveLocation({
+          variables: {
+            input: {
+              location,
+            },
           },
-        },
-      })
+        })
+      }
+    }
+    return () => {
+      clearInterval(intervalId)
     }
   }, [location, saveLocation])
-  useEffect(() => {
-    if (
-      !prevGeolocation?.lat &&
-      !prevGeolocation?.lng &&
-      location?.lat &&
-      location?.lng
-    ) {
-      saveCurrentLocation()
-    }
-  }, [
-    location?.lat,
-    location?.lng,
-    prevGeolocation?.lat,
-    prevGeolocation?.lng,
-    saveCurrentLocation,
-  ])
-  useInterval(() => saveCurrentLocation(), 4000)
 
   const { data: locationsData } = useUsersLocations({
     pollInterval: 5000,
   })
   const locations = useMemo(
     () =>
-      mergeLocationsWithCurrentUserLocation({
-        currentUserLocation:
-          saveUserLocationData?.saveUserLocation.userLocation,
-        locations: locationsData?.usersLocations.usersLocations,
-      }),
+      (
+        locationsData?.usersLocations.usersLocations.filter(
+          (location) =>
+            location.user.id ===
+            saveUserLocationData?.saveUserLocation.userLocation.user.id
+        ) ?? []
+      ).concat(
+        saveUserLocationData?.saveUserLocation.userLocation
+          ? [saveUserLocationData?.saveUserLocation.userLocation]
+          : []
+      ),
     [
       locationsData?.usersLocations.usersLocations,
       saveUserLocationData?.saveUserLocation.userLocation,
     ]
   )
-
-  const { data: authData } = useAuthUser()
-  const authUser = authData?.authUser.user
-  if (!authUser) {
-    throw new Error("User should be authenticated.")
-  }
 
   return (
     <Box h={"100vh"}>
@@ -108,21 +92,20 @@ export function WorldMap() {
   )
 }
 
-function mergeLocationsWithCurrentUserLocation({
-  currentUserLocation,
-  locations = [],
-}: {
-  currentUserLocation?: UserLocationFragmentFragment
-  locations?: UserLocationFragmentFragment[]
-}) {
-  const mergedLocations = locations.map((location) => {
-    if (
-      currentUserLocation &&
-      location.user.id === currentUserLocation.user.id
-    ) {
-      return currentUserLocation
-    }
-    return location
+function useLocation() {
+  /**
+   * @todo: notify user about error
+   */
+  const geo = useGeolocation({
+    enableHighAccuracy: true,
+    maximumAge: 4_000,
   })
-  return mergedLocations
+  const location = useMemo(
+    () =>
+      !geo.longitude || !geo.latitude
+        ? null
+        : { lat: geo.latitude, lng: geo.longitude },
+    [geo.latitude, geo.longitude]
+  )
+  return location
 }
