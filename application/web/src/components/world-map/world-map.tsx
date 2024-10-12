@@ -1,5 +1,4 @@
 import { Box } from "@chakra-ui/react"
-import { useGeolocation } from "@uidotdev/usehooks"
 import { APIProvider, Map } from "@vis.gl/react-google-maps"
 import { useCallback, useEffect, useMemo } from "react"
 
@@ -8,6 +7,7 @@ import { Invitations } from "@/components/invitations"
 import { InvitationsProvider } from "@/components/invitations-provider"
 import { UserMarker } from "@/components/world-map/user-marker"
 import { useRequireAuthUser } from "@/hooks/auth/use-auth-user"
+import { useGeo } from "@/hooks/common/use-geo"
 import { useSaveUserLocation } from "@/hooks/map/use-save-user-location"
 import { useUsersLocations } from "@/hooks/map/use-users-locations"
 
@@ -74,7 +74,7 @@ function useUserLocation() {
   /**
    * @todo: notify user about error
    */
-  const geo = useGeolocation({
+  const geo = useGeo({
     enableHighAccuracy: true,
     maximumAge: 4_000,
   })
