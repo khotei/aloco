@@ -62,7 +62,7 @@ function useActiveLocations({
     () =>
       (
         locationsData?.usersLocations.usersLocations.filter(
-          (location) => location.user.id === currentUserLocation?.user.id
+          (location) => location.user.id !== currentUserLocation?.user.id
         ) ?? []
       ).concat(currentUserLocation ? [currentUserLocation] : []),
     [locationsData?.usersLocations.usersLocations, currentUserLocation]
