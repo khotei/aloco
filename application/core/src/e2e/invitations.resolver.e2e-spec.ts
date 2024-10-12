@@ -9,6 +9,7 @@ import {
 import { afterEach, beforeEach, describe, it } from "node:test"
 
 import { INestApplication } from "@nestjs/common"
+import { ConfigService } from "@nestjs/config"
 import { Test, TestingModule } from "@nestjs/testing"
 import { DataSource } from "typeorm"
 
@@ -19,6 +20,7 @@ import {
   type UserFragmentFragment,
 } from "@/__generated__/scheme.generated"
 import { AppModule } from "@/app.module"
+import { systemConfigs } from "@/configs/environments"
 import { apprequest } from "@/test/requests/app-request"
 import { appsubscribe } from "@/test/requests/app-subscribe"
 import { requestSendInvitation } from "@/test/requests/request-send-invitation"
@@ -32,7 +34,24 @@ describe("InvitationsResolver (e2e)", () => {
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile()
+    })
+      .overrideProvider(ConfigService)
+      .useFactory({
+        factory: (configService: ConfigService) => ({
+          ...configService,
+          get: (key: string) => {
+            if (systemConfigs.KEY) {
+              const originalConfig = configService.get(systemConfigs.KEY)
+              return {
+                ...originalConfig,
+                invitationTimeout: 1000,
+              }
+            }
+            return configService.get(key)
+          },
+        }),
+      })
+      .compile()
     app = moduleFixture.createNestApplication()
     await app.init()
     await app.listen(0)
@@ -313,5 +332,24 @@ describe("InvitationsResolver (e2e)", () => {
     await timeoutPromise
     equal(received, false)
     await alienSub.return()
+  })
+
+  it("should emit timeout invitation when users don't update invitation in a time", async () => {
+    /**
+     * 1. create invitation
+     * 2. bull should have job
+     * 3. doesn't update invitation
+     * 5. invitation should be emitted with timeout status
+     */
+  })
+
+  it("should remove timeout job when invitation was updated", async () => {
+    /**
+     * 1. create invitation
+     * 2. bull should have job
+     * 3. update invitation
+     * 4. bull should not have job
+     * 5. invitation should not be emitted with timeout status
+     */
   })
 })

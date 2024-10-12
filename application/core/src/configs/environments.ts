@@ -13,5 +13,6 @@ export type SystemConfigs = ConfigType<typeof systemConfigs>
 export const systemConfigs = registerAs("system", () => ({
   codeGen: process.env.CODE_GEN === "true",
   env: process.env.NODE_ENV,
+  invitationTimeout: parseInt(process.env.INVITATION_TIMEOUT),
   port: parseInt(process.env.NODE_PORT),
 }))

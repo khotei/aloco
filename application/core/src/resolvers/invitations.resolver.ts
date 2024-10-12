@@ -60,24 +60,15 @@ export class InvitationsResolver {
     const invitation = await this.invitationsRepo.findOneByOrFail({
       id: job.data.invitation.id,
     })
-    /**
-     * @todo: remove for queue when invitation change status, from pending to any other.
-     * if updated invitation has not pending state then remove it from queue.
-     *
-     * so you don't need to check status.
-     * and you will not process unnecessary work.
-     */
-    if (invitation.status === invitationStatus.PENDING) {
-      await this.invitationsRepo.save(
-        this.invitationsRepo.merge(invitation, {
-          status: invitationStatus.TIMEOUT,
-        })
-      )
-      await this.pubSub.publish(
-        INVITATION_SENT_EVENT_KEY,
-        buildInvitationEvent({ invitation })
-      )
-    }
+    await this.invitationsRepo.save(
+      this.invitationsRepo.merge(invitation, {
+        status: invitationStatus.TIMEOUT,
+      })
+    )
+    await this.pubSub.publish(
+      INVITATION_SENT_EVENT_KEY,
+      buildInvitationEvent({ invitation })
+    )
   }
 
   @UseGuards(JwtAuthGuard)
