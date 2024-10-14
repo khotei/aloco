@@ -6,11 +6,12 @@ import {
   ok,
   rejects,
 } from "node:assert/strict"
-import { afterEach, beforeEach, describe, it } from "node:test"
+import { after, afterEach, before, beforeEach, describe, it } from "node:test"
 
+import { getQueueToken } from "@nestjs/bull"
 import { INestApplication } from "@nestjs/common"
-import { ConfigService } from "@nestjs/config"
 import { Test, TestingModule } from "@nestjs/testing"
+import type { Queue } from "bull"
 import { DataSource } from "typeorm"
 
 import {
@@ -20,41 +21,42 @@ import {
   type UserFragmentFragment,
 } from "@/__generated__/scheme.generated"
 import { AppModule } from "@/app.module"
-import { systemConfigs } from "@/configs/environments"
+import { invitationStatus } from "@/entities/invitation.entity"
+import {
+  INVITATION_TIMEOUT_QUEUE_KEY,
+  INVITATION_TIMEOUT_QUEUE_TIME_KEY,
+} from "@/interceptors/invitation-sent-interceptor"
 import { apprequest } from "@/test/requests/app-request"
 import { appsubscribe } from "@/test/requests/app-subscribe"
 import { requestSendInvitation } from "@/test/requests/request-send-invitation"
 import { requestSignUp } from "@/test/requests/request-sign-up"
 import { subscribeInvitationSent } from "@/test/requests/subscribe-invitation-sent"
 
+const FAKE_INVITATION_TIMEOUT = 1_000
+
 describe("InvitationsResolver (e2e)", () => {
   let app: INestApplication
   const auth: Partial<{ token: string; user: UserFragmentFragment }>[] = []
 
-  beforeEach(async () => {
+  before(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     })
-      .overrideProvider(ConfigService)
-      .useFactory({
-        factory: (configService: ConfigService) => ({
-          ...configService,
-          get: (key: string) => {
-            if (systemConfigs.KEY) {
-              const originalConfig = configService.get(systemConfigs.KEY)
-              return {
-                ...originalConfig,
-                invitationTimeout: 1000,
-              }
-            }
-            return configService.get(key)
-          },
-        }),
-      })
+      .overrideProvider(INVITATION_TIMEOUT_QUEUE_TIME_KEY)
+      .useValue(FAKE_INVITATION_TIMEOUT)
       .compile()
     app = moduleFixture.createNestApplication()
     await app.init()
     await app.listen(0)
+
+    await app.get(DataSource).dropDatabase()
+    await app
+      .get<Queue>(getQueueToken(INVITATION_TIMEOUT_QUEUE_KEY))
+      .removeJobs("*")
+  })
+
+  beforeEach(async () => {
+    await app.get(DataSource).synchronize()
 
     auth.push(await requestSignUp({ app }))
     auth.push(await requestSignUp({ app }))
@@ -64,6 +66,12 @@ describe("InvitationsResolver (e2e)", () => {
 
   afterEach(async () => {
     await app.get(DataSource).dropDatabase()
+    await app
+      .get<Queue>(getQueueToken(INVITATION_TIMEOUT_QUEUE_KEY))
+      .removeJobs("*")
+  })
+
+  after(async () => {
     await app.close()
   })
 
@@ -324,32 +332,97 @@ describe("InvitationsResolver (e2e)", () => {
       token: authSender.token,
     })
 
-    const timeoutPromise = new Promise((resolve) => setTimeout(resolve, 1000))
     let received = false
     alienSub.next().then(() => {
       received = true
     })
-    await timeoutPromise
+    await new Promise((resolve) =>
+      setTimeout(resolve, FAKE_INVITATION_TIMEOUT + 100)
+    )
     equal(received, false)
     await alienSub.return()
   })
 
   it("should emit timeout invitation when users don't update invitation in a time", async () => {
-    /**
-     * 1. create invitation
-     * 2. bull should have job
-     * 3. doesn't update invitation
-     * 5. invitation should be emitted with timeout status
-     */
+    const authReceiver = auth.at(1)
+    const { sub: receiverSub } = await subscribeInvitationSent({
+      app,
+      token: authReceiver.token,
+    })
+    const authSender = auth.at(0)
+    const createInput = {
+      receiverId: authReceiver.user.id,
+      status: InvitationStatus.Pending,
+    }
+    await requestSendInvitation({
+      app,
+      input: createInput,
+      token: authSender.token,
+    })
+    const {
+      value: {
+        data: {
+          invitationSent: { invitation: createdEmitted },
+        },
+      },
+    } = await receiverSub.next()
+    const {
+      value: {
+        data: {
+          invitationSent: { invitation: timeoutEmitted },
+        },
+      },
+    } = await receiverSub.next()
+
+    deepEqual(timeoutEmitted, {
+      ...createdEmitted,
+      status: invitationStatus.TIMEOUT,
+      updatedAt: timeoutEmitted.updatedAt,
+    })
+    await receiverSub.return()
   })
 
-  it("should remove timeout job when invitation was updated", async () => {
-    /**
-     * 1. create invitation
-     * 2. bull should have job
-     * 3. update invitation
-     * 4. bull should not have job
-     * 5. invitation should not be emitted with timeout status
-     */
+  it("should not emit timeout when invitation was updated", async () => {
+    const authReceiver = auth.at(1)
+    const { sub: receiverSub } = await subscribeInvitationSent({
+      app,
+      token: authReceiver.token,
+    })
+    const authSender = auth.at(0)
+    const createInput = {
+      receiverId: authReceiver.user.id,
+      status: InvitationStatus.Pending,
+    }
+    const { invitation: created } = await requestSendInvitation({
+      app,
+      input: createInput,
+      token: authSender.token,
+    })
+    // created (pending)
+    await receiverSub.next()
+
+    const acceptInput = {
+      id: created.id,
+      status: InvitationStatus.Accepted,
+    }
+    await apprequest({
+      app,
+      token: authReceiver.token,
+    }).SendInvitation({
+      input: acceptInput,
+    })
+    // accepted
+    await receiverSub.next()
+
+    let received = false
+    // timeout
+    receiverSub.next().then(() => {
+      received = true
+    })
+    await new Promise((resolve) =>
+      setTimeout(resolve, FAKE_INVITATION_TIMEOUT + 100)
+    )
+    equal(received, false)
+    await receiverSub.return()
   })
 })

@@ -27,7 +27,11 @@ import { Invitation } from "@/entities/invitation.entity"
 import { Room } from "@/entities/room.entity"
 import { UserLocation } from "@/entities/user-location.entity"
 import { User } from "@/entities/user.entity"
-import { INVITATION_TIMEOUT_QUEUE_KEY } from "@/interceptors/invitation-sent-interceptor"
+import {
+  INVITATION_TIMEOUT_JOB_TIMEOUT,
+  INVITATION_TIMEOUT_QUEUE_KEY,
+  INVITATION_TIMEOUT_QUEUE_TIME_KEY,
+} from "@/interceptors/invitation-sent-interceptor"
 import { AuthenticationResolver } from "@/resolvers/authentication.resolver"
 import { InvitationsResolver } from "@/resolvers/invitations.resolver"
 import { MapResolver } from "@/resolvers/map.resolver"
@@ -127,6 +131,14 @@ import { MapResolver } from "@/resolvers/map.resolver"
     JwtStrategy,
     MapResolver,
     InvitationsResolver,
+    {
+      inject: [systemConfigs.KEY],
+      provide: INVITATION_TIMEOUT_QUEUE_TIME_KEY,
+      useFactory: (systemConfigs: SystemConfigs) =>
+        isNaN(systemConfigs.invitationTimeout)
+          ? INVITATION_TIMEOUT_JOB_TIMEOUT
+          : systemConfigs.invitationTimeout,
+    },
   ],
 })
 export class AppModule {}

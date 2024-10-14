@@ -1,5 +1,5 @@
 import { ok, rejects } from "node:assert/strict"
-import { afterEach, beforeEach, describe, it } from "node:test"
+import { after, afterEach, before, beforeEach, describe, it } from "node:test"
 
 import { INestApplication } from "@nestjs/common"
 import { Test, TestingModule } from "@nestjs/testing"
@@ -11,17 +11,26 @@ import { apprequest } from "@/test/requests/app-request"
 describe("AuthenticationResolver (e2e)", () => {
   let app: INestApplication
 
-  beforeEach(async () => {
+  before(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile()
     app = moduleFixture.createNestApplication()
     await app.init()
     await app.listen(0)
+
+    await app.get(DataSource).dropDatabase()
+  })
+
+  beforeEach(async () => {
+    await app.get(DataSource).synchronize()
   })
 
   afterEach(async () => {
     await app.get(DataSource).dropDatabase()
+  })
+
+  after(async () => {
     await app.close()
   })
 

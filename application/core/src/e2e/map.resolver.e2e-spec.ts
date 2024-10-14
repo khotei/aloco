@@ -1,5 +1,5 @@
 import { deepEqual, notDeepEqual, ok } from "node:assert/strict"
-import { afterEach, beforeEach, describe, it } from "node:test"
+import { after, afterEach, before, beforeEach, describe, it } from "node:test"
 
 import { faker } from "@faker-js/faker"
 import { INestApplication } from "@nestjs/common"
@@ -30,7 +30,7 @@ describe("MapResolver (e2e)", () => {
   let app: INestApplication
   const auth: Partial<{ token: string; user: UserFragmentFragment }>[] = []
 
-  beforeEach(async () => {
+  before(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile()
@@ -38,11 +38,20 @@ describe("MapResolver (e2e)", () => {
     await app.init()
     await app.listen(0)
 
+    await app.get(DataSource).dropDatabase()
+  })
+
+  beforeEach(async () => {
+    await app.get(DataSource).synchronize()
+
     auth.push(await requestSignUp({ app }))
   })
 
   afterEach(async () => {
     await app.get(DataSource).dropDatabase()
+  })
+
+  after(async () => {
     await app.close()
   })
 
