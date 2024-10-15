@@ -1,11 +1,11 @@
 import { createLazyFileRoute } from "@tanstack/react-router"
 
-import { WorldMap } from "@/components/world-map"
+import { WorldMapScreen } from "@/screens/world-map-screen"
 
 function IndexPage() {
   return (
     <main>
-      <WorldMap />
+      <WorldMapScreen />
     </main>
   )
 }

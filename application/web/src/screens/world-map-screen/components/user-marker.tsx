@@ -13,7 +13,7 @@ import {
   InvitationStatus,
   type UserFragmentFragment,
 } from "@/codegen/__generated__/gql/graphql"
-import { useInvitations } from "@/components/invitations-provider"
+import { useInvitations } from "@/providers/invitations-provider"
 
 export const UserMarker = function UserMarker({
   currentUser,

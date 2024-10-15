@@ -1,11 +1,11 @@
 import { createLazyFileRoute } from "@tanstack/react-router"
 
-import { Room } from "@/components/room"
+import { RoomScreen } from "@/screens/room-screen"
 
 function RoomPage() {
   return (
     <main>
-      <Room />
+      <RoomScreen />
     </main>
   )
 }

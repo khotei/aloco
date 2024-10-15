@@ -10,7 +10,7 @@ import { getMainDefinition } from "@apollo/client/utilities"
 import { createClient } from "graphql-ws"
 import { type ReactNode, useMemo } from "react"
 
-import { useToken } from "@/components/token"
+import { useToken } from "../token-provider"
 
 export function ApolloClientProvider({ children }: { children: ReactNode }) {
   const [token] = useToken()

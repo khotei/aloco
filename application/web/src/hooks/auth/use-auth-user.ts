@@ -1,7 +1,7 @@
 import { useQuery } from "@apollo/client"
 
 import { AuthUserDocument } from "@/codegen/__generated__/gql/graphql"
-import { useToken } from "@/components/token"
+import { useToken } from "@/providers/token-provider"
 
 export function useAuthUser() {
   const [token, , remove] = useToken()

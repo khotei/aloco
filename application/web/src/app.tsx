@@ -3,9 +3,9 @@ import { createRouter, RouterProvider } from "@tanstack/react-router"
 import { useMemo } from "react"
 
 import { routeTree } from "@/codegen/__generated__/routes"
-import { ApolloClientProvider } from "@/components/apollo-client/apollo-client"
 import { AuthInitializer } from "@/components/auth-initializer"
-import { TokenProvider } from "@/components/token"
+import { ApolloClientProvider } from "@/providers/apollo-client-provider"
+import { TokenProvider } from "@/providers/token-provider"
 
 export function App() {
   const router = useMemo(() => createRouter({ routeTree }), [])

@@ -58,6 +58,7 @@ export const InvitationsContext = createContext<
   ReturnType<typeof useInvitationsStore> | undefined
 >(undefined)
 InvitationsContext.displayName = "InvitationsContext"
+
 export function useInvitations() {
   const ctx = useContext(InvitationsContext)
   if (ctx) {

@@ -7,8 +7,8 @@ import {
   type InvitationFragmentFragment,
   InvitationStatus,
 } from "@/codegen/__generated__/gql/graphql"
-import { useInvitations } from "@/components/invitations-provider"
 import { useRequireAuthUser } from "@/hooks/auth/use-auth-user"
+import { useInvitations } from "@/providers/invitations-provider"
 
 import { InvitationDescription } from "./invitation-description"
 import { toast } from "./toast"

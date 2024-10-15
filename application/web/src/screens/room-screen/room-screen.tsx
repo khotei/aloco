@@ -16,9 +16,9 @@ import { useRequireAuthUser } from "@/hooks/auth/use-auth-user"
 import { useCreateStreamToken } from "@/hooks/auth/use-create-stream-token"
 import { Route } from "@/routes/room.$roomId.lazy"
 
-import "./room.css"
+import "./video.css"
 
-export function Room() {
+export function RoomScreen() {
   const { authUser } = useRequireAuthUser()
   const chatUser: ChatUser = useMemo(
     () => ({

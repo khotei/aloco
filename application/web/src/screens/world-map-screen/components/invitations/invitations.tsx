@@ -3,8 +3,8 @@ import { useState } from "react"
 import { useTimeoutFn } from "react-use"
 
 import { InvitationStatus } from "@/codegen/__generated__/gql/graphql"
-import { useInvitations } from "@/components/invitations-provider"
 import { useInvitationSub } from "@/hooks/invitations/use-invitation-sub"
+import { useInvitations } from "@/providers/invitations-provider"
 
 import { Invitation } from "./invitation"
 import { ToastContainer } from "./toast"

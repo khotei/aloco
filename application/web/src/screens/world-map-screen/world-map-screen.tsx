@@ -3,14 +3,15 @@ import { APIProvider, Map } from "@vis.gl/react-google-maps"
 import { useEffect, useMemo } from "react"
 import { useGeolocation, useInterval } from "react-use"
 
-import { Invitations } from "@/components/invitations"
-import { InvitationsProvider } from "@/components/invitations-provider"
-import { UserMarker } from "@/components/world-map/user-marker"
 import { useRequireAuthUser } from "@/hooks/auth/use-auth-user"
 import { useSaveUserLocation } from "@/hooks/map/use-save-user-location"
 import { useUsersLocations } from "@/hooks/map/use-users-locations"
+import { InvitationsProvider } from "@/providers/invitations-provider"
 
-export function WorldMap() {
+import { Invitations } from "./components/invitations"
+import { UserMarker } from "./components/user-marker"
+
+export function WorldMapScreen() {
   const { locations, userLocation } = useActiveLocations()
   const defaultCenter = useMemo(
     () => ({
