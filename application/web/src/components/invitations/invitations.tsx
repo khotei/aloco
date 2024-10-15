@@ -1,5 +1,6 @@
 import { useNavigate } from "@tanstack/react-router"
-import { useEffect, useState } from "react"
+import { useState } from "react"
+import { useTimeoutFn } from "react-use"
 
 import { InvitationStatus } from "@/codegen/__generated__/gql/graphql"
 import { useInvitations } from "@/components/invitations-provider"
@@ -15,6 +16,7 @@ export function Invitations() {
     onData: ({ data }) => {
       if (data) {
         addInvitation(data.invitationSent.invitation)
+
         if (
           data.invitationSent.invitation.status === InvitationStatus.Accepted &&
           "room" in data.invitationSent
@@ -24,20 +26,15 @@ export function Invitations() {
       }
     },
   })
-  /**
-   * @todo: try to move this logic to the Invitation component
-   */
   const navigate = useNavigate()
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
+  useTimeoutFn(
+    async () => {
       if (roomId) {
-        navigate({ to: `/room/${roomId}` })
+        await navigate({ to: `/room/${roomId}` })
       }
-    }, 4000)
-    return () => {
-      clearTimeout(timeoutId)
-    }
-  }, [navigate, roomId])
+    },
+    roomId ? 4_000 : undefined
+  )
 
   return (
     <>

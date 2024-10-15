@@ -1,13 +1,12 @@
 import { createContext, useContext } from "react"
+import { useLocalStorage } from "react-use"
 
-export const tokenCtx = createContext<
-  | [null | string | undefined, (token: null | string | undefined) => void]
-  | undefined
+export const TokenContext = createContext<
+  ReturnType<typeof useLocalStorage<string>> | undefined
 >(undefined)
-tokenCtx.displayName = "TokenContext"
 
-export const useToken = () => {
-  const ctx = useContext(tokenCtx)
+export function useToken() {
+  const ctx = useContext(TokenContext)
   if (!ctx) {
     throw new Error("You should be wrapped into TokenProvider.")
   } else {

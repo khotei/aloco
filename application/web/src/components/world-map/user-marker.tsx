@@ -6,7 +6,8 @@ import {
   Pin,
   useAdvancedMarkerRef,
 } from "@vis.gl/react-google-maps"
-import { useCallback, useMemo, useState } from "react"
+import { useMemo } from "react"
+import { useAsyncFn } from "react-use"
 
 import {
   InvitationStatus,
@@ -24,23 +25,19 @@ export const UserMarker = function UserMarker({
   receiver: UserFragmentFragment
 }) {
   const { invitations, sendInvitation } = useInvitations()
-  const [isLoading, setIsLoading] = useState(false)
   const isInvited = useMemo(
     () =>
       invitations.findIndex((inv) => inv.receiver.id === receiver.id) !== -1,
     [invitations, receiver.id]
   )
-  const handleSend = useCallback(async () => {
-    try {
-      setIsLoading(true)
-      await sendInvitation({
+  const [{ loading }, handleSend] = useAsyncFn(
+    () =>
+      sendInvitation({
         receiverId: receiver.id,
         status: InvitationStatus.Pending,
-      })
-    } finally {
-      setIsLoading(false)
-    }
-  }, [sendInvitation, receiver.id])
+      }),
+    [sendInvitation, receiver.id]
+  )
 
   const [markerRef, marker] = useAdvancedMarkerRef()
   const { isOpen, onClose, onOpen } = useDisclosure()
@@ -62,8 +59,8 @@ export const UserMarker = function UserMarker({
             {currentUser ? null : (
               <Box>
                 <Button
-                  isDisabled={isLoading || isInvited}
-                  isLoading={isLoading}
+                  isDisabled={loading || isInvited}
+                  isLoading={loading}
                   onClick={handleSend}
                   size={"sm"}>
                   {isInvited ? "Pending..." : "Invite"}

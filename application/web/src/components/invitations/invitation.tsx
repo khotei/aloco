@@ -1,6 +1,7 @@
 import { AlertStatus } from "@chakra-ui/alert"
 import { type ToastId, type UseToastOptions } from "@chakra-ui/react"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef } from "react"
+import { useTimeoutFn } from "react-use"
 
 import {
   type InvitationFragmentFragment,
@@ -17,23 +18,12 @@ export function Invitation({
 }: {
   invitation: InvitationFragmentFragment
 }) {
-  const [toastId, setToastId] = useState<null | ToastId>(null)
-  /**
-   * @todo: do we need this in dev mod?
-   * issue when live reload page after change it creates multiple toasts
-   */
-  useEffect(() => {
-    return () => {
-      if (toastId) {
-        toast.close(toastId)
-      }
-    }
-  }, [toastId])
-
   const { authUser } = useRequireAuthUser()
   const { sendInvitation } = useInvitations()
-  const toastProps: UseToastOptions = useMemo(() => {
-    return {
+  const { removeInvitation } = useInvitations()
+  const toastIdRef = useRef<ToastId>()
+  const toastProps: UseToastOptions = useMemo(
+    () => ({
       description: (
         <InvitationDescription
           authUser={authUser}
@@ -42,38 +32,25 @@ export function Invitation({
         />
       ),
       status: invitationToastStatus[invitation.status],
-    }
-  }, [authUser, invitation, sendInvitation])
-  const [previousInvitation, setPreviousInvitation] =
-    useState<InvitationFragmentFragment>(invitation)
+    }),
+    [authUser, invitation, sendInvitation]
+  )
   useEffect(() => {
-    if (!toastId && invitation.status === previousInvitation.status) {
-      const toastId = toast(toastProps)
-      setToastId(toastId)
+    if (!toastIdRef.current) {
+      toastIdRef.current = toast(toastProps)
+    } else {
+      toast.update(toastIdRef.current, toastProps)
     }
-
-    if (toastId && invitation.status !== previousInvitation.status) {
-      toast.update(toastId, toastProps)
-      setPreviousInvitation(invitation)
-    }
-  }, [invitation, previousInvitation.status, toastId, toastProps])
-
-  const { removeInvitation } = useInvitations()
-  useEffect(() => {
-    const timeout =
-      // pending 10000 timeout + 4000 info message (timeout)
-      invitation.status === InvitationStatus.Pending ? 14000 : 4000
-    const timeoutId = setTimeout(() => {
-      if (toastId) {
-        toast.close(toastId)
+  }, [invitation, toastProps])
+  useTimeoutFn(
+    () => {
+      if (toastIdRef.current) {
+        toast.close(toastIdRef.current)
       }
       removeInvitation(invitation)
-    }, timeout)
-    return () => {
-      clearTimeout(timeoutId)
-    }
-  }, [invitation, removeInvitation, toastId])
-
+    },
+    invitation.status === InvitationStatus.Pending ? 14000 : 4000
+  )
   return null
 }
 

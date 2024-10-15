@@ -1,4 +1,5 @@
-import { createContext, useCallback, useContext, useState } from "react"
+import { createContext, useCallback, useContext } from "react"
+import { useList } from "react-use"
 
 import {
   InvitationFragmentFragment,
@@ -7,29 +8,23 @@ import {
 import { useSendInvitation } from "@/hooks/invitations/use-send-invitation"
 
 export function useInvitationsStore() {
-  const [invitations, setInvitations] = useState<InvitationFragmentFragment[]>(
-    []
-  )
+  const [invitations, { filter, set, upsert }] =
+    useList<InvitationFragmentFragment>([])
+
   const removeInvitation = useCallback(
     (invitation: InvitationFragmentFragment) => {
-      setInvitations((prev) => prev.filter((inv) => inv.id !== invitation.id))
+      filter((inv) => inv.id !== invitation.id)
     },
-    []
+    [filter]
   )
   const addInvitation = useCallback(
     (invitation: InvitationFragmentFragment) => {
-      setInvitations((prev) => {
-        const next = Array.of(...prev)
-        const existedIndex = prev.findIndex((inv) => inv.id === invitation.id)
-        if (existedIndex !== -1 && next[existedIndex]) {
-          next[existedIndex] = invitation
-        } else {
-          next.push(invitation)
-        }
-        return next
-      })
+      upsert(
+        (inList, nextInvitation) => inList.id === nextInvitation.id,
+        invitation
+      )
     },
-    []
+    [upsert]
   )
 
   const [send] = useSendInvitation()
@@ -55,16 +50,16 @@ export function useInvitationsStore() {
     invitations,
     removeInvitation,
     sendInvitation,
-    setInvitations,
+    setInvitations: set,
   }
 }
 
-export const invitationsContext = createContext<
+export const InvitationsContext = createContext<
   ReturnType<typeof useInvitationsStore> | undefined
 >(undefined)
-invitationsContext.displayName = "InvitationsContext"
+InvitationsContext.displayName = "InvitationsContext"
 export function useInvitations() {
-  const ctx = useContext(invitationsContext)
+  const ctx = useContext(InvitationsContext)
   if (ctx) {
     return ctx
   }

@@ -10,34 +10,35 @@ import { getMainDefinition } from "@apollo/client/utilities"
 import { createClient } from "graphql-ws"
 import { type ReactNode, useMemo } from "react"
 
-export function ApolloClientProvider({
-  children,
-  token,
-}: {
-  children: ReactNode
-  token: null | string | undefined
-}) {
+import { useToken } from "@/components/token"
+
+export function ApolloClientProvider({ children }: { children: ReactNode }) {
+  const [token] = useToken()
+  const options = useMemo(
+    () => ({
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : undefined),
+      },
+    }),
+    [token]
+  )
   const httpLink = useMemo(
     () =>
       new HttpLink({
-        headers: {
-          ...(token ? { Authorization: `Bearer ${token}` } : undefined),
-        },
+        headers: options.headers,
         uri: `${import.meta.env.VITE_CORE_API_URL}/graphql`,
       }),
-    [token]
+    [options.headers]
   )
   const wsLink = useMemo(
     () =>
       new GraphQLWsLink(
         createClient({
-          connectionParams: {
-            ...(token ? { Authorization: `Bearer ${token}` } : undefined),
-          },
+          connectionParams: options.headers,
           url: `${import.meta.env.VITE_CORE_API_URL}/graphql`,
         })
       ),
-    [token]
+    [options.headers]
   )
   const splitLink = useMemo(
     () =>

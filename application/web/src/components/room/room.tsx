@@ -10,6 +10,7 @@ import {
 } from "@stream-io/video-react-sdk"
 import "@stream-io/video-react-sdk/dist/css/styles.css"
 import { useEffect, useMemo } from "react"
+import { useAsync } from "react-use"
 
 import { useRequireAuthUser } from "@/hooks/auth/use-auth-user"
 import { useCreateStreamToken } from "@/hooks/auth/use-create-stream-token"
@@ -28,9 +29,7 @@ export function Room() {
   )
 
   const [createStreamToken, { data, loading }] = useCreateStreamToken()
-  useEffect(() => {
-    createStreamToken()
-  }, [createStreamToken])
+  useAsync(createStreamToken, [createStreamToken])
 
   if (loading) return <Spinner />
   const streamToken = data?.createStreamToken.token
