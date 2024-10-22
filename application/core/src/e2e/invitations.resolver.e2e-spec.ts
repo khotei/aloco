@@ -21,16 +21,16 @@ import {
   type UserFragmentFragment,
 } from "@/__generated__/scheme.generated"
 import { AppModule } from "@/app.module"
+import { apprequest } from "@/common/test/requests/app-request"
+import { appsubscribe } from "@/common/test/requests/app-subscribe"
+import { requestSendInvitation } from "@/common/test/requests/request-send-invitation"
+import { requestSignUp } from "@/common/test/requests/request-sign-up"
+import { subscribeInvitationSent } from "@/common/test/requests/subscribe-invitation-sent"
 import { invitationStatus } from "@/entities/invitation.entity"
 import {
   INVITATION_TIMEOUT_QUEUE_KEY,
   INVITATION_TIMEOUT_QUEUE_TIME_KEY,
 } from "@/interceptors/invitation-sent-interceptor"
-import { apprequest } from "@/test/requests/app-request"
-import { appsubscribe } from "@/test/requests/app-subscribe"
-import { requestSendInvitation } from "@/test/requests/request-send-invitation"
-import { requestSignUp } from "@/test/requests/request-sign-up"
-import { subscribeInvitationSent } from "@/test/requests/subscribe-invitation-sent"
 
 const FAKE_INVITATION_TIMEOUT = 1_000
 
@@ -282,10 +282,7 @@ describe("InvitationsResolver (e2e)", () => {
       status: InvitationStatus.Accepted,
     }
     const {
-      /**
-       * @todo: fix typings
-       */
-      // @ts-expect-error fuck TS
+      // @ts-expect-error @todo: fix typing
       sendInvitation: { invitation: accepted, room: acceptedRoom },
     } = await apprequest({
       app,

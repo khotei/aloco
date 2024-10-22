@@ -13,7 +13,10 @@ import { AuthResponse } from "@/authentication/dto/auth.dto"
 import { TokenResponse } from "@/authentication/dto/token-response.dto"
 import { JwtAuthGuard } from "@/authentication/guards/jwt-auth.guard"
 import type { JwtPayload } from "@/authentication/strategies/jwt.strategy"
-import { type ServicesConfig, servicesConfigs } from "@/configs/environments"
+import {
+  type ServicesConfig,
+  servicesConfigs,
+} from "@/common/configs/environments"
 import { User } from "@/entities/user.entity"
 
 @Resolver()

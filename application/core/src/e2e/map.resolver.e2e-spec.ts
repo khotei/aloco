@@ -8,8 +8,8 @@ import { DataSource } from "typeorm"
 
 import type { UserFragmentFragment } from "@/__generated__/scheme.generated"
 import { AppModule } from "@/app.module"
-import { apprequest } from "@/test/requests/app-request"
-import { requestSignUp } from "@/test/requests/request-sign-up"
+import { apprequest } from "@/common/test/requests/app-request"
+import { requestSignUp } from "@/common/test/requests/request-sign-up"
 
 const fakeLocation = [
   {

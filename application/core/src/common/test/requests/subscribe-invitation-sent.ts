@@ -1,7 +1,7 @@
 import { INestApplication } from "@nestjs/common"
 
 import { InvitationSentDocument } from "@/__generated__/scheme.generated"
-import { appsubscribe } from "@/test/requests/app-subscribe"
+import { appsubscribe } from "@/common/test/requests/app-subscribe"
 
 export async function subscribeInvitationSent({
   app,

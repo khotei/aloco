@@ -1,7 +1,7 @@
 import { INestApplication } from "@nestjs/common"
 
 import type { SendInvitationInput } from "@/__generated__/scheme.generated"
-import { apprequest } from "@/test/requests/app-request"
+import { apprequest } from "@/common/test/requests/app-request"
 
 export async function requestSendInvitation({
   app,

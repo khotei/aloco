@@ -22,7 +22,7 @@ import {
   servicesConfigs,
   type SystemConfigs,
   systemConfigs,
-} from "@/configs/environments"
+} from "@/common/configs/environments"
 import { Invitation } from "@/entities/invitation.entity"
 import { Room } from "@/entities/room.entity"
 import { UserLocation } from "@/entities/user-location.entity"
