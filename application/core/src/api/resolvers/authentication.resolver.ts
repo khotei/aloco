@@ -8,16 +8,16 @@ import { Repository } from "typeorm"
 import {
   Auth,
   type AuthPayload,
-} from "@/authentication/decorators/auth.decorator"
-import { AuthResponse } from "@/authentication/dto/auth.dto"
-import { TokenResponse } from "@/authentication/dto/token-response.dto"
-import { JwtAuthGuard } from "@/authentication/guards/jwt-auth.guard"
-import type { JwtPayload } from "@/authentication/strategies/jwt.strategy"
+} from "@/api/authentication/decorators/auth.decorator"
+import { AuthResponse } from "@/api/authentication/dto/auth.dto"
+import { TokenResponse } from "@/api/authentication/dto/token-response.dto"
+import { JwtAuthGuard } from "@/api/authentication/guards/jwt-auth.guard"
+import type { JwtPayload } from "@/api/authentication/strategies/jwt.strategy"
 import {
   type ServicesConfig,
   servicesConfigs,
 } from "@/common/configs/environments"
-import { User } from "@/entities/user.entity"
+import { User } from "@/domain/entities/user.entity"
 
 @Resolver()
 export class AuthenticationResolver {

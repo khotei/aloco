@@ -1,7 +1,7 @@
 import { createUnionType } from "@nestjs/graphql"
 
-import { AcceptedInvitationResponse } from "@/dto/invitations/accepted-invitation-response.dto"
-import { InvitationResponse } from "@/dto/invitations/invitation-response.dto"
+import { AcceptedInvitationResponse } from "@/api/dto/invitations/accepted-invitation-response.dto"
+import { InvitationResponse } from "@/api/dto/invitations/invitation-response.dto"
 
 export const invitationResponseUnion = createUnionType({
   name: "InvitationResponseUnion",

@@ -7,9 +7,9 @@ import { Test, TestingModule } from "@nestjs/testing"
 import { DataSource } from "typeorm"
 
 import type { UserFragmentFragment } from "@/__generated__/scheme.generated"
+import { apprequest } from "@/api/tests/requests/app-request"
+import { requestSignUp } from "@/api/tests/requests/request-sign-up"
 import { AppModule } from "@/app.module"
-import { apprequest } from "@/common/test/requests/app-request"
-import { requestSignUp } from "@/common/test/requests/request-sign-up"
 
 const fakeLocation = [
   {

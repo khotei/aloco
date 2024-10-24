@@ -9,7 +9,7 @@ import {
   UpdateDateColumn,
 } from "typeorm"
 
-import { User } from "@/entities/user.entity"
+import { User } from "@/domain/entities/user.entity"
 
 export enum invitationStatus {
   ACCEPTED = "ACCEPTED",

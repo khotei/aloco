@@ -1,7 +1,7 @@
 import { Field, ObjectType } from "@nestjs/graphql"
 
-import { Invitation } from "@/entities/invitation.entity"
-import { Room } from "@/entities/room.entity"
+import { Invitation } from "@/domain/entities/invitation.entity"
+import { Room } from "@/domain/entities/room.entity"
 
 @ObjectType()
 export class AcceptedInvitationResponse {

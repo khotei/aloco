@@ -5,8 +5,8 @@ import { INestApplication } from "@nestjs/common"
 import { Test, TestingModule } from "@nestjs/testing"
 import { DataSource } from "typeorm"
 
+import { apprequest } from "@/api/tests/requests/app-request"
 import { AppModule } from "@/app.module"
-import { apprequest } from "@/common/test/requests/app-request"
 
 describe("AuthenticationResolver (e2e)", () => {
   let app: INestApplication

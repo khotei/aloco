@@ -16,25 +16,25 @@ import { PassportModule as NestPassportModule } from "@nestjs/passport"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { PubSub } from "graphql-subscriptions"
 
-import { JwtStrategy } from "@/authentication/strategies/jwt.strategy"
+import { JwtStrategy } from "@/api/authentication/strategies/jwt.strategy"
+import {
+  INVITATION_TIMEOUT_JOB_TIMEOUT,
+  INVITATION_TIMEOUT_QUEUE_KEY,
+  INVITATION_TIMEOUT_QUEUE_TIME_KEY,
+} from "@/api/interceptors/invitation-sent-interceptor"
+import { AuthenticationResolver } from "@/api/resolvers/authentication.resolver"
+import { InvitationsResolver } from "@/api/resolvers/invitations.resolver"
+import { MapResolver } from "@/api/resolvers/map.resolver"
 import {
   type ServicesConfig,
   servicesConfigs,
   type SystemConfigs,
   systemConfigs,
 } from "@/common/configs/environments"
-import { Invitation } from "@/entities/invitation.entity"
-import { Room } from "@/entities/room.entity"
-import { UserLocation } from "@/entities/user-location.entity"
-import { User } from "@/entities/user.entity"
-import {
-  INVITATION_TIMEOUT_JOB_TIMEOUT,
-  INVITATION_TIMEOUT_QUEUE_KEY,
-  INVITATION_TIMEOUT_QUEUE_TIME_KEY,
-} from "@/interceptors/invitation-sent-interceptor"
-import { AuthenticationResolver } from "@/resolvers/authentication.resolver"
-import { InvitationsResolver } from "@/resolvers/invitations.resolver"
-import { MapResolver } from "@/resolvers/map.resolver"
+import { Invitation } from "@/domain/entities/invitation.entity"
+import { Room } from "@/domain/entities/room.entity"
+import { UserLocation } from "@/domain/entities/user-location.entity"
+import { User } from "@/domain/entities/user.entity"
 
 @Module({
   imports: [

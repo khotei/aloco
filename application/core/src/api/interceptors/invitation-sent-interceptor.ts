@@ -11,8 +11,8 @@ import { PubSub } from "graphql-subscriptions"
 import { Observable } from "rxjs"
 import { tap } from "rxjs/operators"
 
-import type { InvitationResponseUnion } from "@/dto/invitations/invitation-response-union.dto"
-import { invitationStatus } from "@/entities/invitation.entity"
+import type { InvitationResponseUnion } from "@/api/dto/invitations/invitation-response-union.dto"
+import { invitationStatus } from "@/domain/entities/invitation.entity"
 
 export type InvitationSentEventPayload = {
   invitationSent: InvitationResponseUnion

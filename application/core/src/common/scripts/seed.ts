@@ -4,8 +4,8 @@ import { getRepositoryToken } from "@nestjs/typeorm"
 import type { Repository } from "typeorm"
 
 import { AppModule } from "@/app.module"
-import { UserLocation } from "@/entities/user-location.entity"
-import { User } from "@/entities/user.entity"
+import { UserLocation } from "@/domain/entities/user-location.entity"
+import { User } from "@/domain/entities/user.entity"
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)

@@ -20,17 +20,17 @@ import {
   type SendInvitationInput,
   type UserFragmentFragment,
 } from "@/__generated__/scheme.generated"
-import { AppModule } from "@/app.module"
-import { apprequest } from "@/common/test/requests/app-request"
-import { appsubscribe } from "@/common/test/requests/app-subscribe"
-import { requestSendInvitation } from "@/common/test/requests/request-send-invitation"
-import { requestSignUp } from "@/common/test/requests/request-sign-up"
-import { subscribeInvitationSent } from "@/common/test/requests/subscribe-invitation-sent"
-import { invitationStatus } from "@/entities/invitation.entity"
 import {
   INVITATION_TIMEOUT_QUEUE_KEY,
   INVITATION_TIMEOUT_QUEUE_TIME_KEY,
-} from "@/interceptors/invitation-sent-interceptor"
+} from "@/api/interceptors/invitation-sent-interceptor"
+import { apprequest } from "@/api/tests/requests/app-request"
+import { appsubscribe } from "@/api/tests/requests/app-subscribe"
+import { requestSendInvitation } from "@/api/tests/requests/request-send-invitation"
+import { requestSignUp } from "@/api/tests/requests/request-sign-up"
+import { subscribeInvitationSent } from "@/api/tests/requests/subscribe-invitation-sent"
+import { AppModule } from "@/app.module"
+import { invitationStatus } from "@/domain/entities/invitation.entity"
 
 const FAKE_INVITATION_TIMEOUT = 1_000
 

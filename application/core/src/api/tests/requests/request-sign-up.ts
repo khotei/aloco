@@ -1,6 +1,6 @@
 import { INestApplication } from "@nestjs/common"
 
-import { apprequest } from "@/common/test/requests/app-request"
+import { apprequest } from "@/api/tests/requests/app-request"
 
 export async function requestSignUp({ app }: { app: INestApplication<any> }) {
   const {

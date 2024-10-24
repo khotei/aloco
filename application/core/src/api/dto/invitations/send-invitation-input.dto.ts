@@ -8,7 +8,7 @@ import {
   type ValidationArguments,
 } from "class-validator"
 
-import { invitationStatus } from "@/entities/invitation.entity"
+import { invitationStatus } from "@/domain/entities/invitation.entity"
 
 @InputType()
 export class SendInvitationInput {

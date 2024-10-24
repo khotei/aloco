@@ -9,23 +9,26 @@ import type { Repository } from "typeorm"
 import {
   Auth,
   type AuthPayload,
-} from "@/authentication/decorators/auth.decorator"
-import { JwtAuthGuard } from "@/authentication/guards/jwt-auth.guard"
+} from "@/api/authentication/decorators/auth.decorator"
+import { JwtAuthGuard } from "@/api/authentication/guards/jwt-auth.guard"
 import {
   type InvitationResponseUnion,
   invitationResponseUnion,
-} from "@/dto/invitations/invitation-response-union.dto"
-import { SendInvitationInput } from "@/dto/invitations/send-invitation-input.dto"
-import { Invitation, invitationStatus } from "@/entities/invitation.entity"
-import { Room } from "@/entities/room.entity"
-import { User } from "@/entities/user.entity"
+} from "@/api/dto/invitations/invitation-response-union.dto"
+import { SendInvitationInput } from "@/api/dto/invitations/send-invitation-input.dto"
 import {
   buildInvitationEvent,
   INVITATION_SENT_EVENT_KEY,
   INVITATION_TIMEOUT_QUEUE_KEY,
   type InvitationSentEventPayload,
   InvitationSentInterceptor,
-} from "@/interceptors/invitation-sent-interceptor"
+} from "@/api/interceptors/invitation-sent-interceptor"
+import {
+  Invitation,
+  invitationStatus,
+} from "@/domain/entities/invitation.entity"
+import { Room } from "@/domain/entities/room.entity"
+import { User } from "@/domain/entities/user.entity"
 
 @Processor(INVITATION_TIMEOUT_QUEUE_KEY)
 @Resolver()

@@ -10,13 +10,13 @@ import { MoreThanOrEqual, type Repository } from "typeorm"
 import {
   Auth,
   type AuthPayload,
-} from "@/authentication/decorators/auth.decorator"
-import { JwtAuthGuard } from "@/authentication/guards/jwt-auth.guard"
-import { SaveUserLocationInput } from "@/dto/map/save-user-location-input.dto"
-import { UserLocationResponse } from "@/dto/map/user-location.dto"
-import { UsersLocationsResponse } from "@/dto/map/users-locations-response.dto"
-import { UserLocation } from "@/entities/user-location.entity"
-import { User } from "@/entities/user.entity"
+} from "@/api/authentication/decorators/auth.decorator"
+import { JwtAuthGuard } from "@/api/authentication/guards/jwt-auth.guard"
+import { SaveUserLocationInput } from "@/api/dto/map/save-user-location-input.dto"
+import { UserLocationResponse } from "@/api/dto/map/user-location.dto"
+import { UsersLocationsResponse } from "@/api/dto/map/users-locations-response.dto"
+import { UserLocation } from "@/domain/entities/user-location.entity"
+import { User } from "@/domain/entities/user.entity"
 
 @UseInterceptors(ClassSerializerInterceptor)
 @UseGuards(JwtAuthGuard)

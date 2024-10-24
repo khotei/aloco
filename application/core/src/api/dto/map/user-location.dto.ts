@@ -1,6 +1,6 @@
 import { Field, ObjectType } from "@nestjs/graphql"
 
-import { UserLocation } from "@/entities/user-location.entity"
+import { UserLocation } from "@/domain/entities/user-location.entity"
 
 @ObjectType()
 export class UserLocationResponse {
